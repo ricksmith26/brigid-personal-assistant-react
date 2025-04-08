@@ -1,0 +1,8 @@
+.localVideo {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    height: max-content;
+    border: 4px solid white;
+    border-radius: 4px;
+}

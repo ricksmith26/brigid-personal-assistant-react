@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities; 
+
+:root {
+  --lk-va-bar-width: 72px;
+  --lk-control-bar-height: unset;
+  width: 100vw;
+}
+
+.agent-visualizer > .lk-audio-bar {
+  width: 72px;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  background-color:#b2cdd6;
+}
+
+.lk-agent-control-bar {
+  @apply border-t-0 p-0 h-min mr-4;
+}
+
+.lk-disconnect-button {
+  @apply h-[36px] hover:bg-[#6b221a] hover:text-[white] bg-[#31100c] border-[#6b221a]; 
+}
+.assistant-constainer {
+  width: 100%;
+  height: 100vh;
+  background-color: black;
+}
+
+
+.winstonContainer {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+
+}
+
+.localVideo {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  height: max-content;
+  border: 4px solid white;
+  border-radius: 4px;
+}

@@ -1,0 +1,34 @@
+.outgoingCallBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-height: 100%;
+    min-width: 100%;
+    background-color: #93C572;
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.outgoingTitle {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 46px;
+    padding: 16px;
+    color: white;
+    font-weight: 900;
+}
+
+.outgoingButtonContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

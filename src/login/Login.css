@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+
+.loginBackGround {
+    height: 100%;
+    width: 100%;
+    background-color: #b2cdd6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+
+.centered-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+.appearing-container-anchor {
+    width: 550px;
+    position: relative;
+}
+
+.appearing-container {
+    width: 550px;
+    height: 124px;
+    background-color: #b2cdd6;
+    position: absolute;
+    top: -148px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    transition: all 2s ease-in-out;
+}
+
+
+
+/* button {
+  position: relative;
+  overflow: hidden;
+  transition: background 400ms;
+  color: #fff;
+  background-color: #5892a6; 
+  padding: 1rem 2rem;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  outline: 0;
+  border: 0;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+button:hover {
+    border-color: #2c4953;
+} */

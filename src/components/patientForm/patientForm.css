@@ -1,0 +1,74 @@
+.inputsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin: 8px
+}
+
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    text-align: center;
+    align-items: center;
+    align-content: center;
+
+}
+
+.namesContainer {
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-right: 16px;
+}
+
+.buttonContainer {
+    margin-top: 16px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.contentsContainer {
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 200px;
+}
+
+.logo {
+    object-fit: cover;
+
+}
+
+.dateOfbirth {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+}
+
+.patientFormBackground {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.addedContacts {
+    width: 630px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    max-height: 48px;
+    overflow: auto;
+}
+.ListedContacts {
+    overflow: auto;
+}
