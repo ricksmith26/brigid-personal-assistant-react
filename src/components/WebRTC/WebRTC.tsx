@@ -13,6 +13,7 @@ import useLocalTTS from "../../hooks/useLocalTTS";
 import { useIncomingCallSound } from "../../hooks/IncomingCall";
 import { useSocket } from "../../providers/socketProvider";
 import { useOutGoingCallSound } from "../../hooks/outgoingCall";
+import decline from './IncomingCall/decline.svg'
 
 export const WebRTC = () => {
     const dispatch = useAppDispatch();
@@ -227,6 +228,7 @@ export const WebRTC = () => {
             <OutgoingCall isOutgoing={outgoingCall} hangupCall={rejectCall}/>
             <IncomingCall incomingCall={incomingCall} caller={getFullNameByEmail(caller, contacts)} acceptCall={acceptCall} rejectCall={rejectCall} />
             <Videos areVisible={areVisible} localVideoRef={localVideoRef} remoteVideoRef={remoteVideoRef} rejectCall={rejectCall}/>
+            {areVisible && <img src={decline} style={{ height: '75px', cursor: 'pointer', position: "fixed", left: '36px', top: '50%'}} onClick={() => rejectCall()} />}
         </div >
     );
 };

@@ -9,7 +9,7 @@ interface VideosProps {
     rejectCall: Function;
 }
 
-export const Videos = ({ areVisible, localVideoRef, remoteVideoRef, rejectCall }: VideosProps) => {
+export const Videos = ({ areVisible, localVideoRef, remoteVideoRef }: VideosProps) => {
     return (
         <>
             {<div style={{ visibility: areVisible ? 'visible' : 'hidden' }}>
@@ -28,7 +28,6 @@ export const Videos = ({ areVisible, localVideoRef, remoteVideoRef, rejectCall }
                     <video ref={localVideoRef} autoPlay playsInline muted style={{ height: '150px', zIndex: 100 }}></video>
                 </div>
             </div>}
-            <img src={decline} style={{ height: '75px', cursor: 'pointer', position: "fixed", bottom: '36px' }} onClick={() => rejectCall()} />
         </>
 
     )

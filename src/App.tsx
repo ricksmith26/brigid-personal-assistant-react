@@ -25,6 +25,7 @@ import { useSocket } from './providers/socketProvider.js';
 import { SocketEvent } from './socket/socketMiddleware.js';
 import EmergencyCall from './components/EmergencyCall/EmergencyCall.js';
 import EmergencyCall2 from './components/EmergencyCall/EmergencyCall2.js';
+import { setNewMessage } from './redux/slices/LivekitMessages.js';
 
 function App() {
   const mode = useAppSelector(selectMode)
@@ -33,10 +34,8 @@ function App() {
   const user = useAppSelector(selectUser)
   const { socket } = useSocket();
 
-  // console.log(isPlaying, '<<<<<<isPlaying')
   useLocalTTS()
   useEffect(() => {
-
     socket.on(SocketEvent.Message, (message: any) => {
       if (message.type === ModesEnum.WEBRTC) {
         if (message.toEmail) {
@@ -51,6 +50,14 @@ function App() {
     }),
     socket.on(SocketEvent.EmergencyCall, () => {
       dispatch(setMode('EMERGENCY'))
+    })
+    socket.on(SocketEvent.EventNotifcation, (event) => {
+      dispatch(setNewMessage(`Please read out this reminder: This a reminder, ${event.title} at ${event.time}, and the time is ${event.time}.`))
+      dispatch(setMode(ModesEnum.WINSTON))
+    })
+    socket.on(SocketEvent.ModeChange, ({mode}) => {
+      console.log(mode)
+      dispatch(setMode(mode))
     })
   }, [])
  

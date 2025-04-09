@@ -16,11 +16,11 @@ const initialState: ImagesState = {
 
 const createImageBlob = async(response: AxiosResponse) => {
     return await Promise.all(
-        response.data.images.map(async (imageUrl: string) => {
+        response.data.images.filter(async (imageUrl: string) => {
           const imgResponse = await axiosIns.get(imageUrl, {
             responseType: 'blob',
           });
-          return URL.createObjectURL(imgResponse.data);
+          if (imgResponse.status === 200) return URL.createObjectURL(imgResponse.data);
         })
       );
 }
@@ -28,11 +28,11 @@ const createImageBlob = async(response: AxiosResponse) => {
 export const getImages = createAsyncThunk(
     'images/getImages',
     async () => {
-      const response = await axiosIns.get(`${process.env.API_URL}/images/all`);
+        const response = await axiosIns.get(`${process.env.API_URL}/images/all`);
 
-      const imageBlobs = await createImageBlob(response)
-  
-      return imageBlobs 
+        const imageBlobs = await createImageBlob(response)
+    
+        return imageBlobs 
     }
   );
 

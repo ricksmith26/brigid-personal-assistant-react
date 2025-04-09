@@ -21,9 +21,9 @@ export enum SocketEvent {
   IceCandidate = "iceCandidate",
   Message = "message",
   EmergencyCall = 'emergencyCall',
-
-  // Emit events
+  EventNotifcation = 'eventNotification',
   Register = "register",
+  ModeChange = "modeChange"
 }
 
 let socket: SocketInterface | null = null;
@@ -58,6 +58,11 @@ const socketMiddleware: Middleware = (store) => (next) => (action) => {
       socket.socket.on(SocketEvent.Register, () => {
         console.log("Socket registered");
       });
+
+      // socket.socket.on(SocketEvent.ModeChange, (mode) => {
+      //   console.log("MODE CHANGE", mode)
+      //   store.dispatch(setMode(mode))
+      // })
 
       
 

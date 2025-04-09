@@ -13,7 +13,6 @@ import SimpleVoiceAssistant from "./components/SimpleVoiceAssistant";
 import { ModesEnum } from "../types/Modes";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectNewMessage, setNewMessage } from "../redux/slices/LivekitMessages";
-import LiveKitInitMessage from "./components/livekitInitMessage";
 
 export type ConnectionDetails = {
   serverUrl: string;
@@ -23,6 +22,7 @@ export type ConnectionDetails = {
 };
 
 export default function Winston({ mode, email }: any) {
+  const dispatch = useAppDispatch()
   const newMessage = useAppSelector(selectNewMessage)
   const [connectionDetails, updateConnectionDetails] = useState<
     ConnectionDetails | undefined
@@ -35,8 +35,11 @@ export default function Winston({ mode, email }: any) {
         import.meta.env.VITE_NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? "/api/connection-details",
         window.location.origin
       );
+
       const connectionUrl = newMessage.length > 0 ? `${url}/${email}/${newMessage}` : `${url}/${email}`
+      console.log('Sending to:',connectionUrl, newMessage.length)
       const response = await fetch(connectionUrl);
+      dispatch(setNewMessage(''))
       if (!response.ok) throw new Error("Failed to fetch connection details");
 
       const connectionDetailsData = await response.json();
@@ -67,7 +70,6 @@ export default function Winston({ mode, email }: any) {
         onDisconnected={() => updateConnectionDetails(undefined)}
         // className="grid grid-rows-[2fr_1fr] items-center"
       >
-        <LiveKitInitMessage/>
         <SimpleVoiceAssistant onStateChange={setAgentState} />
         {/* <ControlBar
         onConnectButtonClicked={onConnectButtonClicked}

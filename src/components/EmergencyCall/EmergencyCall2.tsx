@@ -7,6 +7,9 @@ import {
   UserAgentOptions,
   InviterOptions
 } from 'sip.js';
+import { useAppDispatch } from '../../redux/hooks';
+import { setMode } from '../../redux/slices/ModeSlice';
+import { ModesEnum } from '../../types/Modes';
 
 const EmergencyCall2: React.FC = () => {
   const [target, setTarget] = useState('100');
@@ -16,6 +19,7 @@ const EmergencyCall2: React.FC = () => {
   const sessionRef = useRef<Inviter | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const dispatch = useAppDispatch()
 
   const config: UserAgentOptions = {
     uri: UserAgent.makeURI('sip:User3@asterisk.brigid-personal-assistant.com'),
@@ -96,6 +100,7 @@ const EmergencyCall2: React.FC = () => {
         sessionRef.current = null;
         if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
         if (localVideoRef.current) localVideoRef.current.srcObject = null;
+        dispatch(setMode(ModesEnum.IDLE))
       }
     });
 

@@ -7,7 +7,7 @@ interface LivekitMessagesState {
 }
 
 const initialState: LivekitMessagesState = {
-    newMessage: 'Please tell me the time',
+    newMessage: '',
 }
 
 export const LivekitMessagesSlice = createSlice({
