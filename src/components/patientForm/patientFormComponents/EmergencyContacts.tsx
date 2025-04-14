@@ -10,14 +10,14 @@ type Contact = {
     Lastname: string;
     Phone: string;
     Email: string;
-
 }
 
 export const EmergencyContacts = ({
         contacts,
         setContacts,
-        submitContacts
-    }: { contacts: any[], setContacts: any, submitContacts: Function }) => {
+        submitContacts,
+        onBoardingForm = false
+    }: { contacts: any[], setContacts: any, submitContacts: Function, onBoardingForm?: boolean }) => {
     const [contact, setContact] = useState<Contact>({
         Firstname: '',
         Lastname: '',
@@ -64,7 +64,7 @@ export const EmergencyContacts = ({
                 </div>
                 <div className="buttonContainer">
                     <Button onClick={addContact}>{contacts.length === 0 ? 'Add contact+' : 'Add another contact +'}</Button>
-                    {contacts.length > 0 && <Button onClick={submitContacts}>Next</Button>}
+                    {contacts.length > 0 && <Button onClick={submitContacts}>{onBoardingForm ? 'Next' : 'Save'}</Button>}
                 </div>
             </Tile>
 

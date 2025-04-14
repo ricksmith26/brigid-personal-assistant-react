@@ -37,11 +37,11 @@ const useLocalTTS = () => {
             if (lastResult && typeof lastResult === "string") {
                 const transcript = lastResult.toLowerCase().trim();
 
-                if (mode === ModesEnum.WEBRTC && transcript.includes("stop listening")) {
+                if (transcript.includes("stop listening")) {
                     console.log("set to idle");
                     dispatch(setMode(ModesEnum.IDLE));
                 }
-                if (mode === ModesEnum.WINSTON && transcript.includes("stop listening")) {
+                if (transcript.includes("stop listening")) {
                     console.log("set to idle");
                     dispatch(setMode(ModesEnum.IDLE));
                 }
@@ -54,8 +54,13 @@ const useLocalTTS = () => {
                 }
                 if (transcript.includes(ModesEnum.WINSTON)) {
                     dispatch(setMode(ModesEnum.WINSTON));
+                    // <Navigate to={`/${ModesEnum.WEBRTC}`} />;
                     console.log("set to winston");
-                } else if (results.length > 50) {
+                }
+                if (transcript.includes("dashboard")) {
+                    dispatch(setMode('dashboard'));
+                }
+                else if (results.length > 50) {
                     setResults([])
                 }
             }

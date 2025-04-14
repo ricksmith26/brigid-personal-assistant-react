@@ -26,8 +26,12 @@ import { SocketEvent } from './socket/socketMiddleware.js';
 import EmergencyCall from './components/EmergencyCall/EmergencyCall.js';
 import EmergencyCall2 from './components/EmergencyCall/EmergencyCall2.js';
 import { setNewMessage } from './redux/slices/LivekitMessages.js';
+import DashBoard from './components/Dashboard/DashBoard.js';
+import { Link, Navigate, Route, Router, Routes, useNavigate } from 'react-router';
+import Contacts from './components/Contacts/Contacts.js';
 
 function App() {
+  const navigate = useNavigate();
   const mode = useAppSelector(selectMode)
   const dispatch = useAppDispatch()
   const photos = useAppSelector(selectPhotos)
@@ -46,21 +50,27 @@ function App() {
           dispatch(setCaller(message.fromEmail))
         }
         dispatch(setMode(ModesEnum.WEBRTC));
+        <Navigate to={`/${ModesEnum.WEBRTC}`} />;
       }
     }),
-    socket.on(SocketEvent.EmergencyCall, () => {
-      dispatch(setMode('EMERGENCY'))
-    })
+      socket.on(SocketEvent.EmergencyCall, () => {
+        dispatch(setMode('EMERGENCY'))
+      })
     socket.on(SocketEvent.EventNotifcation, (event) => {
       dispatch(setNewMessage(`Please read out this reminder: This a reminder, ${event.title} at ${event.time}, and the time is ${event.time}.`))
       dispatch(setMode(ModesEnum.WINSTON))
     })
-    socket.on(SocketEvent.ModeChange, ({mode}) => {
+    socket.on(SocketEvent.ModeChange, ({ mode }) => {
       console.log(mode)
       dispatch(setMode(mode))
     })
   }, [])
- 
+
+  useEffect(() => {
+    navigate(`/${mode}`)
+    console.log(`/${mode}`, '<<<<<<<')
+  }, [mode])
+
 
 
   useEffect(() => {
@@ -79,28 +89,21 @@ function App() {
   }, [user])
 
   return (
-
     <div className='app'>
-
-      {mode === ModesEnum.LOGIN && <Login />}
-
-      {mode === ModesEnum.PATIENT_FORM && <PatientForm email={user?.email || ''} setMode={setMode} />}
-
-      {mode === ModesEnum.WINSTON &&
-        <div className='assistant-constainer'>
-          <Winston email={user?.email} mode={mode}></Winston>
-        </div>}
-
-      {mode === 'idle' && user && <Carousel images={photos} />}
-
-      {mode === 'WEBRTC' && user &&
-        <WebRTC
-          // patientEmail={user.email}
-        />
-      }
-      {mode === 'EMERGENCY' && <EmergencyCall2/>}
-    {/* <EmergencyCall2/> */}
-     {/* <EmergencyCall username='User3' password='1234' domain='asterisk.brigid-personal-assistant.com' targetUser='100'/> */}
+      <Routes>
+        <Route path={`/${ModesEnum.LOGIN}`} element={<Login />} />
+        <Route path={`/${ModesEnum.PATIENT_FORM}`} element={<PatientForm email={user?.email || ''} setMode={setMode} />} />
+        <Route path={`/${ModesEnum.WINSTON}`} element={<Winston email={user?.email} mode={mode} />} />
+        <Route path={`/${ModesEnum.IDLE}`} element={<Carousel images={photos} />} />
+        <Route path={`/${ModesEnum.WEBRTC}`} element={<WebRTC />} />
+        <Route path={`/${ModesEnum.EMERGENCY_CALL}`} element={<EmergencyCall2 />} />
+        <Route path={`/${ModesEnum.CONTACTS}`} element={<Contacts/>} />
+        <Route path={`/${ModesEnum.PHONE_CALL}`} element={<div>PHONE_CALL</div>} />
+        <Route path={`/${ModesEnum.VIDEO_CALL}`} element={<div>VIDEO_CALL</div>} />
+        <Route path={`/${ModesEnum.SPOTIFY}`} element={<div>SPOTIFY</div>} />
+        <Route path={`/${ModesEnum.SETTINGS}`} element={<div>SETTINGS</div>} />
+        <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} />
+      </Routes>
     </div>
   )
 }

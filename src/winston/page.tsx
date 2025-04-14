@@ -60,6 +60,7 @@ export default function Winston({ mode, email }: any) {
   }, [mode])
 
   return (
+    <div className='assistant-constainer'>
       <LiveKitRoom
         token={connectionDetails?.participantToken}
         serverUrl={connectionDetails?.serverUrl}
@@ -78,6 +79,7 @@ export default function Winston({ mode, email }: any) {
         <RoomAudioRenderer />
         <NoAgentNotification state={agentState} />
       </LiveKitRoom>
+      </div>
   );
 }
 

@@ -3,6 +3,7 @@ import type { RootState } from '../store'
 import axiosIns from '../../providers/axiosIns'
 import { createFhirRelatedPersons } from '../../utils/ContactsUtils'
 import { RelatedPerson } from '../../types/FhirRelatedPerson'
+import { Telecom } from '../../types/FhirPatient'
 
 interface ContactsState {
     contacts: any[]
@@ -50,7 +51,16 @@ export const contactsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder.addCase(getContacts.fulfilled, (state, action) => {
-            state.contacts = action.payload
+            state.contacts = action.payload.map((contact: any, i: number) => {
+                return {
+                    id: contact.id || '',
+                    Firstname: contact.name[0].given[0],
+                    Lastname: contact.name[0].family,
+                    Email: contact.telecom.find((t: Telecom) => t.system === "email")?.value,
+                    Phone: contact.telecom.find((t: Telecom) => t.system === "phone")?.value
+                }
+            })
+            return 
         }),
         builder.addCase(createRelatedPersons.fulfilled, (state,action) => {
             state.contacts = action.payload
