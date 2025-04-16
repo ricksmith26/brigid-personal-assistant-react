@@ -19,14 +19,13 @@ import {
   getImages,
   selectPhotos
 } from './redux/slices/ImagesSlice.js';
-import { getPatient } from './redux/slices/PatientSlice.js';
-import { getContacts } from './redux/slices/ContactsSlice.js';
-import { useSocket } from './providers/socketProvider.js';
-import { SocketEvent } from './socket/socketMiddleware.js';
-import EmergencyCall from './components/EmergencyCall/EmergencyCall.js';
-import EmergencyCall2 from './components/EmergencyCall/EmergencyCall2.js';
-import { setNewMessage } from './redux/slices/LivekitMessages.js';
-import DashBoard from './components/Dashboard/DashBoard.js';
+import { getPatient } from './redux/slices/PatientSlice.ts';
+import { getContacts } from './redux/slices/ContactsSlice.ts';
+import { useSocket } from './providers/socketProvider.tsx';
+import { SocketEvent } from './socket/socketMiddleware.ts';
+import EmergencyCall from './components/EmergencyCall/EmergencyCall.tsx';
+import { setNewMessage } from './redux/slices/LivekitMessages.ts';
+import DashBoard from './components/Dashboard/DashBoard.tsx';
 // import { Link, Navigate, Route, Router, Routes, useNavigate } from 'react-router';
 import {
   // BrowserRouter,
@@ -117,7 +116,7 @@ function App() {
         <Route path={`/${ModesEnum.WINSTON}`} element={<Winston email={user?.email} mode={mode} />} />
         <Route path={`/${ModesEnum.IDLE}`} element={<Carousel images={photos} />} />
         <Route path={`/${ModesEnum.WEBRTC}`} element={<WebRTC />} />
-        <Route path={`/${ModesEnum.EMERGENCY_CALL}`} element={<EmergencyCall2 />} />
+        <Route path={`/${ModesEnum.EMERGENCY_CALL}`} element={<EmergencyCall />} />
         <Route path={`/${ModesEnum.CONTACTS}`} element={<Contacts/>} />
         <Route path={`/${ModesEnum.PHONE_CALL}`} element={<div>PHONE_CALL</div>} />
         <Route path={`/${ModesEnum.VIDEO_CALL}`} element={<div>VIDEO_CALL</div>} />
