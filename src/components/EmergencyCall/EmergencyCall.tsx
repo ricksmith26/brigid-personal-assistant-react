@@ -58,7 +58,6 @@ const EmergencyCall: React.FC = () => {
   }, []);
 
   const handleCall = async () => {
-    console.log(userAgentRef, '<<<<<<userAgentRefS')
     if (!userAgentRef.current || !target) return;
 
     const targetURI = UserAgent.makeURI(`sip:${target}@asterisk.brigid-personal-assistant.com`);

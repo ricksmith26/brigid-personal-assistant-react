@@ -1,6 +1,7 @@
 import "./outgoingCall.css"
 import declineIcon from "../IncomingCall/decline.svg"
 import { Tile } from "../../Tile/Tile";
+import { useOutGoingCallSound } from "../../../hooks/outgoingCall";
 
 
 interface OutgoingCallProps {
@@ -9,6 +10,7 @@ interface OutgoingCallProps {
 }
 
 export const OutgoingCall = ({ isOutgoing, hangupCall }: OutgoingCallProps) => {
+    useOutGoingCallSound()
     return (
         <>
             {isOutgoing

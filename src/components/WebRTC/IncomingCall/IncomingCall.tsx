@@ -2,6 +2,7 @@ import './incomingCall.css'
 import answer from "./answer.svg"
 import decline from "./decline.svg"
 import { Tile } from '../../Tile/Tile';
+import { useIncomingCallSound } from '../../../hooks/IncomingCall';
 
 interface IncomingCallProps {
     incomingCall: boolean;
@@ -11,6 +12,7 @@ interface IncomingCallProps {
 }
 
 export const IncomingCall = ({ incomingCall, caller, acceptCall, rejectCall }: IncomingCallProps) => {
+    useIncomingCallSound()
     return (
         <>
             {incomingCall && (

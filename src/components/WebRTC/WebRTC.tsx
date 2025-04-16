@@ -10,9 +10,7 @@ import { setMode } from "../../redux/slices/ModeSlice";
 import { selectAnswered, selectCaller, selectInBoundCall, selectOutBoundCall, selectRecipiant, setAnswered, setCaller, setInBoundCall, setOutBoundCall } from "../../redux/slices/CallsSlice";
 import { selectContacts } from "../../redux/slices/ContactsSlice";
 import useLocalTTS from "../../hooks/useLocalTTS";
-import { useIncomingCallSound } from "../../hooks/IncomingCall";
 import { useSocket } from "../../providers/socketProvider";
-import { useOutGoingCallSound } from "../../hooks/outgoingCall";
 import decline from './IncomingCall/decline.svg'
 
 export const WebRTC = () => {
@@ -26,8 +24,6 @@ export const WebRTC = () => {
     const [receivedOffer, setReceivedOffer] = useState<RTCSessionDescriptionInit | null>(null);
     const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
     const [areVisible, setAreVisible] = useState<boolean>(false)
-    const toggelOutGoingSound = useOutGoingCallSound(outgoingCall)
-    const toggleIncomingSound = useIncomingCallSound(incomingCall)
 
     const { socket } = useSocket();
     useLocalTTS()
@@ -46,7 +42,6 @@ export const WebRTC = () => {
 
         socket.on(SocketEvent.Answer, async ({ answer }: any) => {
             console.log("Received Answer");
-            toggelOutGoingSound()
             dispatch(setOutBoundCall(false))
             setAreVisible(true)
             if (peerConnection) {
@@ -54,10 +49,8 @@ export const WebRTC = () => {
             }
         });
         socket.on(SocketEvent.HangUp, async ({ toEmail }: any) => {
-            console.log(SocketEvent.HangUp, "<<<<<SocketEvent.HangUp")
+            console.log(SocketEvent.HangUp)
             dispatch(setMode(ModesEnum.IDLE))
-            toggelOutGoingSound()
-            toggleIncomingSound()
             dispatch(setAnswered())
             if (recipiant !== toEmail) hangupCall();
         });
@@ -85,17 +78,13 @@ export const WebRTC = () => {
         const pc = createPeerConnection(recipiant);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        console.log({ toEmail: recipiant, offer }, '<<<startCall<<')
         socket.emit(SocketEvent.CallUser, { toEmail: recipiant, offer });
     };
 
     const acceptCall = async () => {
-        console.log({ caller, receivedOffer }, 'before toggle off<<<<<<')
         if (!caller || !receivedOffer) return;
 
         dispatch(setInBoundCall(false));
-        toggleIncomingSound()
-
         const pc = createPeerConnection(caller);
         setPeerConnection(pc);
 
@@ -163,7 +152,6 @@ export const WebRTC = () => {
         // Reset state
         dispatch(setOutBoundCall(false))
         dispatch(setInBoundCall(false));
-        // /toggelOutGoingSound
         setCaller(null);
         setReceivedOffer(null);
         setAreVisible(false);
@@ -191,7 +179,6 @@ export const WebRTC = () => {
     };
 
     const getFullNameByEmail = (email: string, data: any) => {
-        console.log(data, email, contacts, '<<getFullNameByEmail', incomingCall, outgoingCall)
         const person = data.find((p: any) => p.Email === email);
         if (!person) return 'Unknown Caller';
         const { Firstname, Lastname } = person;
@@ -206,7 +193,6 @@ export const WebRTC = () => {
             }
         });
         setTimeout(() => {
-            console.log({ outgoingCall, incomingCall })
             if (outgoingCall) startCall()
         }, 1000)
     }, []);
@@ -216,10 +202,6 @@ export const WebRTC = () => {
             acceptCall()
         }
     }, [answered])
-
-    useEffect(() => {
-        console.log({ caller, contacts }, '<<{aller, contacts<<<<<<')
-    }, [incomingCall])
 
     return (
         <div>
