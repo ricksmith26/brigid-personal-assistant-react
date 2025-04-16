@@ -28,7 +28,7 @@ export const WebRTC = () => {
     const [areVisible, setAreVisible] = useState<boolean>(false)
     const toggelOutGoingSound = useOutGoingCallSound(outgoingCall)
     const toggleIncomingSound = useIncomingCallSound(incomingCall)
-   
+
     const { socket } = useSocket();
     useLocalTTS()
 
@@ -53,7 +53,7 @@ export const WebRTC = () => {
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
             }
         });
-        socket.on(SocketEvent.HangUp, async({toEmail}: any) => {
+        socket.on(SocketEvent.HangUp, async ({ toEmail }: any) => {
             console.log(SocketEvent.HangUp, "<<<<<SocketEvent.HangUp")
             dispatch(setMode(ModesEnum.IDLE))
             toggelOutGoingSound()
@@ -61,13 +61,13 @@ export const WebRTC = () => {
             dispatch(setAnswered())
             if (recipiant !== toEmail) hangupCall();
         });
-        
+
         socket.on(SocketEvent.IceCandidate, ({ candidate }: any) => {
             if (peerConnection) {
                 peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
             }
         });
-        
+
 
         return () => {
             socket.off(SocketEvent.IncomingCall);
@@ -90,7 +90,7 @@ export const WebRTC = () => {
     };
 
     const acceptCall = async () => {
-        console.log({caller , receivedOffer}, 'before toggle off<<<<<<')
+        console.log({ caller, receivedOffer }, 'before toggle off<<<<<<')
         if (!caller || !receivedOffer) return;
 
         dispatch(setInBoundCall(false));
@@ -111,7 +111,7 @@ export const WebRTC = () => {
 
     const rejectCall = () => {
         console.log("Hanging up...");
-   
+
         socket.emit(SocketEvent.HangUp, { toEmail: recipiant });
         socket.emit(SocketEvent.HangUp, { toEmail: caller });
 
@@ -119,15 +119,15 @@ export const WebRTC = () => {
             peerConnection.close();
             setPeerConnection(null);
         }
-    
+
         // Stop all local media tracks
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
             localStreamRef.current = null;
         }
-    
+
         // Reset state
-        
+
         dispatch(setInBoundCall(false));
         dispatch(setOutBoundCall(false))
         setCaller(null);
@@ -142,24 +142,24 @@ export const WebRTC = () => {
 
     const hangupCall = () => {
         console.log("Hanging up...");
-    
+
         // Notify the other peer about the hangup
         if (caller) {
             socket.emit(SocketEvent.HangUp, { toEmail: caller });
         }
-    
+
         // Close the peer connection
         if (peerConnection) {
             peerConnection.close();
             setPeerConnection(null);
         }
-    
+
         // Stop all local media tracks
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
             localStreamRef.current = null;
         }
-    
+
         // Reset state
         dispatch(setOutBoundCall(false))
         dispatch(setInBoundCall(false));
@@ -167,7 +167,7 @@ export const WebRTC = () => {
         setCaller(null);
         setReceivedOffer(null);
         setAreVisible(false);
-        
+
         console.log("Call ended.");
     };
 
@@ -191,14 +191,12 @@ export const WebRTC = () => {
     };
 
     const getFullNameByEmail = (email: string, data: any) => {
-        console.log(data, email)
-        const person = data.find((p: any) =>
-          p.telecom.some((t:any) => t.system === "email" && t.value === email)
-        );
-        if (!person || !person.name?.[0]) return 'Unknown Caller';
-        const { given, family } = person.name[0];
-        return `${given.join(" ")} ${family}`;
-      };
+        console.log(data, email, contacts, '<<getFullNameByEmail', incomingCall, outgoingCall)
+        const person = data.find((p: any) => p.Email === email);
+        if (!person) return 'Unknown Caller';
+        const { Firstname, Lastname } = person;
+        return `${Firstname} ${Lastname}`;
+    };
 
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
@@ -208,7 +206,7 @@ export const WebRTC = () => {
             }
         });
         setTimeout(() => {
-            console.log({outgoingCall, incomingCall})
+            console.log({ outgoingCall, incomingCall })
             if (outgoingCall) startCall()
         }, 1000)
     }, []);
@@ -219,16 +217,16 @@ export const WebRTC = () => {
         }
     }, [answered])
 
-    useEffect(() =>{
-        console.log({incomingCall, outgoingCall}, '<<{incomingCall, outgoingCall}<<<<<<')
+    useEffect(() => {
+        console.log({ caller, contacts }, '<<{aller, contacts<<<<<<')
     }, [incomingCall])
 
     return (
         <div>
-            <OutgoingCall isOutgoing={outgoingCall} hangupCall={rejectCall}/>
-            <IncomingCall incomingCall={incomingCall} caller={getFullNameByEmail(caller, contacts)} acceptCall={acceptCall} rejectCall={rejectCall} />
-            <Videos areVisible={areVisible} localVideoRef={localVideoRef} remoteVideoRef={remoteVideoRef} rejectCall={rejectCall}/>
-            {areVisible && <img src={decline} style={{ height: '75px', cursor: 'pointer', position: "fixed", left: '36px', top: '50%'}} onClick={() => rejectCall()} />}
+            {outgoingCall && <OutgoingCall isOutgoing={outgoingCall} hangupCall={rejectCall} />}
+            {incomingCall && <IncomingCall incomingCall={incomingCall} caller={getFullNameByEmail(caller, contacts)} acceptCall={acceptCall} rejectCall={rejectCall} />}
+            <Videos areVisible={areVisible} localVideoRef={localVideoRef} remoteVideoRef={remoteVideoRef} rejectCall={rejectCall} />
+            {areVisible && <img src={decline} style={{ height: '75px', cursor: 'pointer', position: "fixed", left: '36px', top: '50%' }} onClick={() => rejectCall()} />}
         </div >
     );
 };

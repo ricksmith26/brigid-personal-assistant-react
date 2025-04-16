@@ -10,15 +10,17 @@ import {
 import { useAppDispatch } from '../../redux/hooks';
 import { setMode } from '../../redux/slices/ModeSlice';
 import { ModesEnum } from '../../types/Modes';
+import { Tile } from '../Tile/Tile';
 
 const EmergencyCall2: React.FC = () => {
-  const [target, setTarget] = useState('100');
+  const [target, setTarget] = useState('200');
   const [registered, setRegistered] = useState(false);
   const userAgentRef = useRef<UserAgent | null>(null);
   const registererRef = useRef<Registerer | null>(null);
   const sessionRef = useRef<Inviter | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const [isAnswered, setIsAnswered] = useState(false)
   const dispatch = useAppDispatch()
 
   const config: UserAgentOptions = {
@@ -77,23 +79,24 @@ const EmergencyCall2: React.FC = () => {
     inviter.stateChange.addListener((state) => {
       console.log(`Call state: ${state}`);
       if (state === SessionState.Established) {
+        setIsAnswered(true)
         const sessionDescriptionHandler: any = inviter.sessionDescriptionHandler;
         if (sessionDescriptionHandler) {
-            const handler: any = inviter.sessionDescriptionHandler;
-            const pc: RTCPeerConnection = handler.peerConnection;
-            pc.addEventListener('track', (event) => {
-              console.log('📡 Got remote track:', event.track.kind);
-              remoteStream.addTrack(event.track);
-            });
-            // Setup local video
-            const localStream = sessionDescriptionHandler.localMediaStream;
-            if (localVideoRef.current && localStream) {
-              localVideoRef.current.srcObject = localStream;
-            }
-            const remoteStream = sessionDescriptionHandler.remoteMediaStream;
-            if (remoteVideoRef.current && remoteStream) {
-              remoteVideoRef.current.srcObject = remoteStream;
-            }
+          const handler: any = inviter.sessionDescriptionHandler;
+          const pc: RTCPeerConnection = handler.peerConnection;
+          pc.addEventListener('track', (event) => {
+            console.log('📡 Got remote track:', event.track.kind);
+            remoteStream.addTrack(event.track);
+          });
+          // Setup local video
+          const localStream = sessionDescriptionHandler.localMediaStream;
+          if (localVideoRef.current && localStream) {
+            localVideoRef.current.srcObject = localStream;
+          }
+          const remoteStream = sessionDescriptionHandler.remoteMediaStream;
+          if (remoteVideoRef.current && remoteStream) {
+            remoteVideoRef.current.srcObject = remoteStream;
+          }
         }
       }
       if (state === SessionState.Terminated) {
@@ -120,25 +123,23 @@ const EmergencyCall2: React.FC = () => {
 
   useEffect(() => {
     if (registered) {
-        handleCall()
+      handleCall()
     }
   }, [registered])
 
   return (
     <div>
-      {/* <h2>📹 Video Call (SIP.js)</h2>
-      <input
-        type="text"
-        value={target}
-        onChange={(e) => setTarget(e.target.value)}
-        placeholder="Enter SIP extension"
-        disabled={!registered}
-      />
-      <button onClick={handleCall} disabled={!registered || !target}>Call</button>
-      <button onClick={hangUp} disabled={!sessionRef.current}>Hang Up</button> */}
-
+      {!isAnswered &&
+        <div style={{ position: 'fixed', height: '100%', width: '100%', top: 0, left: 0, backgroundColor: 'red', zIndex: 200, padding: '36px' }}>
+          <Tile colour="white" backgroundColor='red' title='Emergency Call' style={{ height: '100%', width: '100%' }}>
+            <div style={{ color: 'white', height: "100%", width: '100%', alignContent: 'center', alignItems: 'center', textAlign: 'center', fontSize: '46px', "fontWeight": 900 }}>
+              <div>Calling</div>
+              <div>Response Center</div>
+            </div>
+          </Tile>
+        </div>}
       <div>
-        <video  className="localVideo" ref={localVideoRef} autoPlay playsInline muted style={{ position: 'fixed', bottom: '36px', right: '36px', width: "300px", height: "200px", objectFit: 'cover', zIndex: 99 }}/>
+        <video className="localVideo" ref={localVideoRef} autoPlay playsInline muted style={{ position: 'fixed', bottom: '36px', right: '36px', width: "300px", height: "200px", objectFit: 'cover', zIndex: 99 }} />
         <video ref={remoteVideoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: 'cover' }} />
       </div>
     </div>
