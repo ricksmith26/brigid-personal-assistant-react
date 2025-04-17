@@ -1,18 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./Button.css"
 
 const Button = ({ children, onClick,  type = "button" }: any) => {
     const [coords, setCoords] = React.useState({ x: -1, y: -1 });
     const [isRippling, setIsRippling] = React.useState(false);
   
-    React.useEffect(() => {
+    useEffect(() => {
       if (coords.x !== -1 && coords.y !== -1) {
         setIsRippling(true);
         setTimeout(() => setIsRippling(false), 300);
       } else setIsRippling(false);
     }, [coords]);
   
-    React.useEffect(() => {
+    useEffect(() => {
       if (!isRippling) setCoords({ x: -1, y: -1 });
     }, [isRippling]);
   

@@ -7,7 +7,7 @@ interface CarouselProps {
   autoSlideInterval?: number;
 }
 
-const Carousel: React.FC<CarouselProps> = ({ images, autoSlide = true, autoSlideInterval = 10000 }) => {
+const Carousel: React.FC<CarouselProps> = ({ images, autoSlide = true, autoSlideInterval = 30000 }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(1);
   const [displayImages, setDisplayImages] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(true);

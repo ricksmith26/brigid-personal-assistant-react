@@ -131,31 +131,26 @@ export const WebRTC = () => {
 
     const hangupCall = () => {
         console.log("Hanging up...");
-
         // Notify the other peer about the hangup
         if (caller) {
             socket.emit(SocketEvent.HangUp, { toEmail: caller });
         }
-
         // Close the peer connection
         if (peerConnection) {
             peerConnection.close();
             setPeerConnection(null);
         }
-
         // Stop all local media tracks
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
             localStreamRef.current = null;
         }
-
         // Reset state
         dispatch(setOutBoundCall(false))
         dispatch(setInBoundCall(false));
         setCaller(null);
         setReceivedOffer(null);
         setAreVisible(false);
-
         console.log("Call ended.");
     };
 
@@ -205,10 +200,27 @@ export const WebRTC = () => {
 
     return (
         <div>
-            {outgoingCall && <OutgoingCall isOutgoing={outgoingCall} hangupCall={rejectCall} />}
-            {incomingCall && <IncomingCall incomingCall={incomingCall} caller={getFullNameByEmail(caller, contacts)} acceptCall={acceptCall} rejectCall={rejectCall} />}
-            <Videos areVisible={areVisible} localVideoRef={localVideoRef} remoteVideoRef={remoteVideoRef} rejectCall={rejectCall} />
-            {areVisible && <img src={decline} style={{ height: '75px', cursor: 'pointer', position: "fixed", left: '36px', top: '50%' }} onClick={() => rejectCall()} />}
+            {outgoingCall
+                && <OutgoingCall
+                    isOutgoing={outgoingCall}
+                    recipiant={getFullNameByEmail(caller, contacts)}
+                    hangupCall={rejectCall}/>}
+            {incomingCall
+                && <IncomingCall
+                    incomingCall={incomingCall}
+                    caller={getFullNameByEmail(caller, contacts)}
+                    acceptCall={acceptCall}
+                    rejectCall={rejectCall} />}
+            <Videos
+                areVisible={areVisible}
+                localVideoRef={localVideoRef}
+                remoteVideoRef={remoteVideoRef}
+                rejectCall={rejectCall} />
+            {areVisible
+                && <img
+                    src={decline}
+                    style={{ height: '75px', cursor: 'pointer', position: "fixed", left: '36px', top: '50%' }}
+                    onClick={() => rejectCall()} />}
         </div >
     );
 };
