@@ -80,11 +80,24 @@
 }
 
 .track {
+    cursor: pointer;
     background-color: #2c4953;
     color: white;
     padding: 4px;
+    padding-left: 8px;
     border-radius: 4px;
     margin-bottom: 4px;
+    border: 2px solid #2c4953;
+}
+.currentlyPlayingTrack {
+    cursor: pointer;
+    background-color: white;
+    color: #2c4953;
+    padding: 4px;
+    padding-left: 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    border: 2px solid #2c4953;
 }
 
 .sliderContainer {

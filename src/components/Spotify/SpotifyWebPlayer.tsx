@@ -6,7 +6,7 @@ import PlayPause from './PlayPause';
 import FastForwardOrRewind from './FastForwardOrRewind';
 import PlayerSlider from './PlayerSlider';
 const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken: string }) => {
-  const uris = Tracks.tracks.map((t: any) => t.uri).reverse();
+  const uris = Tracks.tracks.map((t: any) => t.uri);
   const tracks = Tracks.tracks
   const {
     isActive,
@@ -17,7 +17,8 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     togglePlay,
     nextTrack,
     previousTrack,
-    seek
+    seek,
+    selectTrackById
   } = useSpotifyPlayer(token, uris, refreshToken);
 
   const getTimerString = (givenSeconds: number) => {
@@ -39,9 +40,14 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
         <img src={currentTrack?.album?.images[0]?.url} alt="album" className="trackImage" />
       </div>
       <div className='rightSide'>
-        {tracks.map((track) => {
+        {tracks.map((track, index) => {
           return (
-            <div className='track'>{track.name}</div>
+            <div
+              className={currentTrack.id !== track.id ?  'track' : 'currentlyPlayingTrack'}
+              onClick={() => selectTrackById(track.id)}
+              >
+                {track.name}
+              </div>
           )
         })}
       </div>

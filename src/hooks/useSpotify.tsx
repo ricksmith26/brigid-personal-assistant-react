@@ -15,6 +15,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
   const playerRef = useRef<any>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [currentTrack, setCurrentTrack] = useState<any>(null);
+  // const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [elapsed, setElapsed] = useState<number>(0);
@@ -125,7 +126,38 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
       setElapsed(positionMs); // Optional: update local elapsed time immediately
     }
   };
-
+  const selectTrackById = async (trackId: string) => {
+    if (!deviceId) {
+      console.warn('Device ID not set');
+      return;
+    }
+  
+    const fullUri = `spotify:track:${trackId}`;
+    const index = uris.findIndex(uri => uri === fullUri);
+  
+    if (index === -1) {
+      console.warn(`Track ID ${trackId} not found in uris`);
+      return;
+    }
+  
+    try {
+      await axios.put(
+        `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+        {
+          uris, // keep the full list
+          offset: { position: index }, // jump to the track
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log(`Playing track at index ${index}`);
+    } catch (err) {
+      console.error('Failed to select track by ID:', err);
+    }
+  };
+  
+  
 
   return {
     isActive,
@@ -136,6 +168,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     togglePlay,
     nextTrack,
     previousTrack,
-    seek
+    seek,
+    selectTrackById
   };
 }

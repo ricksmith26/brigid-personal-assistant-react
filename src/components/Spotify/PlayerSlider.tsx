@@ -10,6 +10,7 @@ interface PlayerSliderProps {
 
 const PlayerSlider = ({min, max, value, onChange}: PlayerSliderProps) => {
     const [currentValue, setCurrentValue] = useState(value)
+    const [isMoving, setIsMoving] = useState(false)
 
     const debouncedSeek = useCallback(
         debounce((value: number) => {
@@ -22,7 +23,7 @@ const PlayerSlider = ({min, max, value, onChange}: PlayerSliderProps) => {
       useEffect(() => {
         debouncedSeek(Number(currentValue));
       }, [currentValue]);
-
+      
     return (
         <input
             
@@ -30,7 +31,7 @@ const PlayerSlider = ({min, max, value, onChange}: PlayerSliderProps) => {
             type="range"
             min={min}
             max={max}
-            value={currentValue}
+            value={value}
             className="slider"></input>
     )
 }
