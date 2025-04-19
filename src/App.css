@@ -23,7 +23,9 @@
   align-content: center;
   align-items: center;
   background-color:#b2cdd6;
+  scrollbar-color: #2c4953 #b2cdd6;
 }
+
 
 .lk-agent-control-bar {
   @apply border-t-0 p-0 h-min mr-4;

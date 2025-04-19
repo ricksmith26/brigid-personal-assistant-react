@@ -8,6 +8,7 @@ import { imagesSlice } from "./slices/ImagesSlice";
 import patientSlice from "./slices/PatientSlice";
 import { contactsSlice } from "./slices/ContactsSlice";
 import { LivekitMessagesSlice } from "./slices/LivekitMessages";
+import { spotifySlice } from "./slices/SpotifySlice";
 
 export const rootReducer = combineReducers({
     counterSlice: counterSlice.reducer,
@@ -18,5 +19,6 @@ export const rootReducer = combineReducers({
     imagesSlice: imagesSlice.reducer,
     patientSlice: patientSlice.reducer,
     contactsSlice: contactsSlice.reducer,
-    LivekitMessagesSlice: LivekitMessagesSlice.reducer
+    LivekitMessagesSlice: LivekitMessagesSlice.reducer,
+    spotifySlice: spotifySlice.reducer
 })

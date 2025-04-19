@@ -1,7 +1,7 @@
 import "./outgoingCall.css"
 import declineIcon from "../IncomingCall/decline.svg"
 import { Tile } from "../../Tile/Tile";
-import { useOutGoingCallSound } from "../../../hooks/outgoingCall";
+import { useOutGoingCallSound } from "../../../hooks/useOutGoingCallSound";
 
 
 interface OutgoingCallProps {

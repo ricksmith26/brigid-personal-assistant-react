@@ -2,7 +2,7 @@ import './incomingCall.css'
 import answer from "./answer.svg"
 import decline from "./decline.svg"
 import { Tile } from '../../Tile/Tile';
-import { useIncomingCallSound } from '../../../hooks/IncomingCall';
+import { useIncomingCallSound } from '../../../hooks/useIncomingCallSound';
 
 interface IncomingCallProps {
     incomingCall: boolean;

@@ -40,6 +40,8 @@ import {
 
 
 import Contacts from './components/Contacts/Contacts.js';
+import Spotify from './components/Spotify/Spotify.tsx';
+import Callback from './components/Spotify/Callback.tsx';
 
 
 function App() {
@@ -114,7 +116,7 @@ function App() {
         <Route path={`/${ModesEnum.LOGIN}`} element={<Login />} />
         <Route path={`/${ModesEnum.PATIENT_FORM}`} element={<PatientForm email={user?.email || ''} setMode={setMode} />} />
         <Route path={`/${ModesEnum.WINSTON}`} element={<Winston email={user?.email} mode={mode} />} />
-        <Route path={`/${ModesEnum.IDLE}`} element={<Carousel images={photos} />} />
+        {/* <Route path={`/${ModesEnum.IDLE}`} element={<Carousel images={photos} />} /> */}
         <Route path={`/${ModesEnum.WEBRTC}`} element={<WebRTC />} />
         <Route path={`/${ModesEnum.EMERGENCY_CALL}`} element={<EmergencyCall />} />
         <Route path={`/${ModesEnum.CONTACTS}`} element={<Contacts/>} />
@@ -123,7 +125,11 @@ function App() {
         <Route path={`/${ModesEnum.SPOTIFY}`} element={<div>SPOTIFY</div>} />
         <Route path={`/${ModesEnum.SETTINGS}`} element={<div>SETTINGS</div>} />
         <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} />
+        {/* <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} /> */}
+        <Route path={`/idle`} element={<Spotify />} />
+        <Route path="/callback" element={<Callback/>} />
       </Routes>
+      {/* <Spotify/> */}
     </div>
   )
 }
