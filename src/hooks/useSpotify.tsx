@@ -122,6 +122,8 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
   }, [isPaused, duration]);
 
   // Control methods
+  const play = () => playerRef.current?.play()
+  const pause = () => playerRef.current?.pause()
   const togglePlay = () => playerRef.current?.togglePlay();
   const nextTrack = () => playerRef.current?.nextTrack();
   const previousTrack = () => playerRef.current?.previousTrack();
@@ -164,19 +166,14 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     }
   };
 
-  useEffect(() => {
-    setDuration(0)
-    setElapsed(0)
-  }, [])
-
-  
-
   return {
     isActive,
     isPaused,
     currentTrack,
     elapsed,
     duration,
+    play,
+    pause,
     togglePlay,
     nextTrack,
     previousTrack,

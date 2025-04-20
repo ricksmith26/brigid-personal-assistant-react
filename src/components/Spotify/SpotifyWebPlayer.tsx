@@ -4,11 +4,12 @@ import './spotify.css'
 import PlayPause from './PlayPause';
 import FastForwardOrRewind from './FastForwardOrRewind';
 import PlayerSlider from './PlayerSlider';
-import { useAppSelector } from '../../redux/hooks';
-import { selectTracks, selectUris } from '../../redux/slices/SpotifySlice';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { selectTracks, selectUris, setTracks } from '../../redux/slices/SpotifySlice';
 import { useEffect } from 'react';
 
 const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken: string }) => {
+  const dispatch = useAppDispatch()
   const tracks = useAppSelector(selectTracks)
   const uris = useAppSelector(selectUris)
   const {
@@ -22,7 +23,9 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     previousTrack,
     seek,
     selectTrackById,
-    isReady
+    isReady,
+    play,
+    pause
   } = useSpotifyPlayer(token, uris, refreshToken);
 
   const getTimerString = (givenSeconds: number) => {
@@ -38,10 +41,14 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     if (isReady) {
       const timeout = setTimeout(() => {
         // togglePlay(); 
+        play()
       }, 3000);
   
       return () => {
         if (!isPaused) togglePlay();
+        seek(0)
+        pause()
+        dispatch(setTracks([]))
         clearTimeout(timeout);
       };
     }
