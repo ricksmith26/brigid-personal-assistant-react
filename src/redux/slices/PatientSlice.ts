@@ -55,9 +55,9 @@ export const patientSlice = createSlice({
         builder.addCase(getPatient.fulfilled, (state, action) => {
             state.patient = action.payload
         }),
-            builder.addCase(addPatient.fulfilled, (state, action) => {
-                state.patient - action.payload
-            })
+        builder.addCase(addPatient.fulfilled, (state, action) => {
+            state.patient - action.payload
+        })
     },
 })
 

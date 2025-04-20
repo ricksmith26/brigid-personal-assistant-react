@@ -1,13 +1,16 @@
-import React from 'react';
 import { useSpotifyPlayer } from '../../hooks/useSpotify';
 import './spotify.css'
-import { Tracks } from './tracks'
+// import { Tracks } from './tracks'
 import PlayPause from './PlayPause';
 import FastForwardOrRewind from './FastForwardOrRewind';
 import PlayerSlider from './PlayerSlider';
+import { useAppSelector } from '../../redux/hooks';
+import { selectTracks, selectUris } from '../../redux/slices/SpotifySlice';
+import { useEffect } from 'react';
+
 const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken: string }) => {
-  const uris = Tracks.tracks.map((t: any) => t.uri);
-  const tracks = Tracks.tracks
+  const tracks = useAppSelector(selectTracks)
+  const uris = useAppSelector(selectUris)
   const {
     isActive,
     isPaused,
@@ -18,7 +21,8 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     nextTrack,
     previousTrack,
     seek,
-    selectTrackById
+    selectTrackById,
+    isReady
   } = useSpotifyPlayer(token, uris, refreshToken);
 
   const getTimerString = (givenSeconds: number) => {
@@ -30,8 +34,25 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     return timeString
   }
 
+  useEffect(() => {
+    if (isReady) {
+      const timeout = setTimeout(() => {
+        // togglePlay(); 
+      }, 3000);
+  
+      return () => {
+        if (!isPaused) togglePlay();
+        clearTimeout(timeout);
+      };
+    }
+  }, [isReady]);
+
+  // useEffect(() => {
+  //   playNextTracks(uris)
+  // }, [tracks])
+
   if (!isActive) {
-    return <p className="text-center">No active Spotify session. Open your app and try again.</p>;
+    return <p className="text-center">Loading...</p>;
   }
 
   return (
@@ -40,10 +61,11 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
         <img src={currentTrack?.album?.images[0]?.url} alt="album" className="trackImage" />
       </div>
       <div className='rightSide'>
-        {tracks.map((track, index) => {
+        {tracks.map((track) => {
           return (
             <div
-              className={currentTrack.id !== track.id ?  'track' : 'currentlyPlayingTrack'}
+              key={track.id}
+              className={currentTrack?.id !== track?.id ?  'track' : 'currentlyPlayingTrack'}
               onClick={() => selectTrackById(track.id)}
               >
                 {track.name}
@@ -73,17 +95,6 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
         />
         <p className='timer'>{`${getTimerString(Math.floor(elapsed / 1000))} /  ${getTimerString(Math.floor(duration / 1000))}`}</p>
       </div>
-      {/* <button onClick={() => seek(60000)}>test</button> */}
-      {/* <div className="">
-        <button onClick={previousTrack}>&lt;&lt;</button>
-        <button onClick={togglePlay}>{isPaused ? 'Play' : 'Pause'}</button>
-        <button onClick={nextTrack}>&gt;&gt;</button>
-      </div> */}
-
-
-      {/* <div className="mt-2 text-sm text-gray-500">
-        {Math.floor(elapsed / 1000)}s / {Math.floor(duration / 1000)}s
-      </div> */}
     </div>
   );
 };

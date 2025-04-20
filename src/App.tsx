@@ -42,6 +42,7 @@ import {
 import Contacts from './components/Contacts/Contacts.js';
 import Spotify from './components/Spotify/Spotify.tsx';
 import Callback from './components/Spotify/Callback.tsx';
+import { setTracks } from './redux/slices/SpotifySlice.ts';
 
 
 function App() {
@@ -81,6 +82,11 @@ function App() {
       console.log(mode)
       dispatch(setMode(mode))
     })
+    socket.on(SocketEvent.Spotify, ({ mode, tracks }: any) => {
+      console.log({ mode, tracks }, '<<<{ mode, tracks }')
+      dispatch(setTracks(tracks))
+      dispatch(setMode(mode))
+    })
   }, [])
   useEffect(() => {
     setUpSocket(socket)
@@ -116,17 +122,16 @@ function App() {
         <Route path={`/${ModesEnum.LOGIN}`} element={<Login />} />
         <Route path={`/${ModesEnum.PATIENT_FORM}`} element={<PatientForm email={user?.email || ''} setMode={setMode} />} />
         <Route path={`/${ModesEnum.WINSTON}`} element={<Winston email={user?.email} mode={mode} />} />
-        {/* <Route path={`/${ModesEnum.IDLE}`} element={<Carousel images={photos} />} /> */}
+        <Route path={`/${ModesEnum.IDLE}`} element={<Carousel images={photos} />} />
         <Route path={`/${ModesEnum.WEBRTC}`} element={<WebRTC />} />
         <Route path={`/${ModesEnum.EMERGENCY_CALL}`} element={<EmergencyCall />} />
         <Route path={`/${ModesEnum.CONTACTS}`} element={<Contacts/>} />
         <Route path={`/${ModesEnum.PHONE_CALL}`} element={<div>PHONE_CALL</div>} />
         <Route path={`/${ModesEnum.VIDEO_CALL}`} element={<div>VIDEO_CALL</div>} />
-        <Route path={`/${ModesEnum.SPOTIFY}`} element={<div>SPOTIFY</div>} />
         <Route path={`/${ModesEnum.SETTINGS}`} element={<div>SETTINGS</div>} />
         <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} />
         {/* <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} /> */}
-        <Route path={`/idle`} element={<Spotify />} />
+        <Route path={`/spotify`} element={<Spotify />} />
         <Route path="/callback" element={<Callback/>} />
       </Routes>
       {/* <Spotify/> */}

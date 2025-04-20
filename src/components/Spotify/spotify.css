@@ -1,5 +1,6 @@
 .trackImage {
     border-radius: 16px;
+    max-height: 340px;
 }
 
 .spotifyPlayContainer {

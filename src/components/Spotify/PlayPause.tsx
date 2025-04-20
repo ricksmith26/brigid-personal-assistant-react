@@ -8,7 +8,7 @@ interface PlayPauseProps {
 
 const PlayPause = ({isPlaying, onClick}: PlayPauseProps) => {
     return (
-        <button className='playPause' onClick={onClick}>{
+        <button id="playPause" className='playPause' onClick={onClick}>{
             isPlaying
             ? <img src={playIcon} style={{height: '24px'}}/>
             : <img src={pauseIcon} style={{height: '24px'}}/>            

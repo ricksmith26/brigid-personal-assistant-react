@@ -54,7 +54,6 @@ const useLocalTTS = () => {
                 }
                 if (transcript.includes(ModesEnum.WINSTON)) {
                     dispatch(setMode(ModesEnum.WINSTON));
-                    // <Navigate to={`/${ModesEnum.WEBRTC}`} />;
                     console.log("set to winston");
                 }
                 if (transcript.includes("dashboard")) {

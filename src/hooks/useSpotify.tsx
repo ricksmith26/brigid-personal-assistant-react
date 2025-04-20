@@ -20,6 +20,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
   const [isActive, setIsActive] = useState<boolean>(false);
   const [elapsed, setElapsed] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
+  const [isReady, setIsReady] = useState(false)
   const expiredBy = useAppSelector(selectExpiredBy)
   const dispatch = useAppDispatch()
 
@@ -65,7 +66,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
 
           // Play the full track list
           if (uris.length > 0) {
-            // if (Number(expiredBy) < Date.now()) dispatch(refreshSpotifyToken())
+            if (Number(expiredBy) < Date.now()) dispatch(refreshSpotifyToken(refreshToken))
             await axios.put(
               `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`,
               {
@@ -94,6 +95,12 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
           setIsActive(!!s);
         });
       });
+
+      player.addListener('ready', ({ device_id }: any) => {
+        console.log('The Web Playback SDK is ready to play music!');
+        setIsReady(true)
+        console.log('Device ID', device_id);
+      })
 
       player.connect();
     };
@@ -156,7 +163,12 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
       console.error('Failed to select track by ID:', err);
     }
   };
-  
+
+  useEffect(() => {
+    setDuration(0)
+    setElapsed(0)
+  }, [])
+
   
 
   return {
@@ -169,6 +181,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     nextTrack,
     previousTrack,
     seek,
-    selectTrackById
+    selectTrackById,
+    isReady
   };
 }

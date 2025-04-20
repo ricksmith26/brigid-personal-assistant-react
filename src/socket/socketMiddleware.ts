@@ -23,7 +23,8 @@ export enum SocketEvent {
   EmergencyCall = 'emergencyCall',
   EventNotifcation = 'eventNotification',
   Register = "register",
-  ModeChange = "modeChange"
+  ModeChange = "modeChange",
+  Spotify = "spotify"
 }
 
 let socket: SocketInterface | null = null;
