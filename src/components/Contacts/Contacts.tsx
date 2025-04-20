@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../redux/hooks"
 import { addContacts, createRelatedPersons, selectContacts } from "../../redux/slices/ContactsSlice"
 import { EmergencyContacts } from "../patientForm/patientFormComponents/EmergencyContacts"

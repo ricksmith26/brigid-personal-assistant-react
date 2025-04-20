@@ -1,7 +1,7 @@
 import React from 'react';
 
 const clientId = 'bc445b54c9a94b649f73f923c675320b';
-const redirectUri = 'http://127.0.0.1:5173/callback';
+const redirectUri = `${process.env.FRONTEND_URL}/callback`;
 
 
 const SpotifyLogin: React.FC = () => {
