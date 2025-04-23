@@ -32,10 +32,9 @@ const Spotify = () => {
 
     useEffect(() => {
         console.log({accessToken , refreshToken , expiresIn})
-        if (true) {
             setTimeout(() => {
                 setReady(true)
-            }, 500)}
+            }, 500)
     }, [accessToken, refreshToken, expiresIn])
 
     return (

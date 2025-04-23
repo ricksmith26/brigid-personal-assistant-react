@@ -30,12 +30,12 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     script.src = 'https://sdk.scdn.co/spotify-player.js';
     script.async = true;
     document.body.appendChild(script);
-  
+
     return () => {
       document.body.removeChild(script); // ✅ return a cleanup function
     };
   }, []);
-  
+
 
   // Initialize SDK
   useEffect(() => {
@@ -47,7 +47,6 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
       });
 
       playerRef.current = player;
-
       player.addListener('ready', async ({ device_id }: any) => {
         setDeviceId(device_id);
 
@@ -63,10 +62,12 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
               headers: { Authorization: `Bearer ${token}` },
             }
           );
+          setElapsed(0)
 
           // Play the full track list
           if (uris.length > 0) {
             // if (Number(expiredBy) < Date.now()) dispatch(refreshSpotifyToken(refreshToken))
+            console.log(uris, '<<<<<uris')
             await axios.put(
               `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`,
               {
@@ -79,35 +80,26 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
               }
             );
           }
+          console.log('The Web Playback SDK is ready to play music!');
+          setIsReady(true)
+          console.log('Device ID', device_id);
         } catch (error) {
           console.error('Failed to transfer or play:', error);
         }
       });
 
       player.addListener('player_state_changed', (state: any) => {
+        console.log(state.track_window.current_track, '<<<<state.track_window.current_track')
+        console.log(state.track_window.next_track, '<<<<state.track_window.next_track')
         if (!state) return;
-
         setCurrentTrack(state.track_window.current_track);
         setIsPaused(state.paused);
         setElapsed(state.position);
         setDuration(state.duration);
-
         player.getCurrentState().then((s: any) => {
           setIsActive(!!s);
         });
       });
-
-      player.addListener('ready', ({ device_id }: any) => {
-        console.log('The Web Playback SDK is ready to play music!');
-        setIsReady(true)
-        console.log('Device ID', device_id);
-        (document as any).getElementById('playPause').addEventListener('click', () => {
-          // The player is activated. The player will keep the
-          // playing state once the state is transferred from other
-          // applications.
-          player.activateElement();
-        });
-      })
 
       player.connect();
     };
@@ -143,8 +135,6 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
 
   // Control methods
   const disconnect = () => playerRef.current?.disconnect();
-  const play = () => playerRef.current?.play()
-  const pause = () => playerRef.current?.pause()
   const togglePlay = () => playerRef.current?.togglePlay();
   const nextTrack = () => playerRef.current?.nextTrack();
   const previousTrack = () => playerRef.current?.previousTrack();
@@ -161,15 +151,14 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
       console.warn('Device ID not set');
       return;
     }
-  
+
     const fullUri = `spotify:track:${trackId}`;
     const index = uris.findIndex(uri => uri === fullUri);
-  
+
     if (index === -1) {
       console.warn(`Track ID ${trackId} not found in uris`);
       return;
     }
-  
     try {
       await axios.put(
         `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
@@ -193,8 +182,6 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     currentTrack,
     elapsed,
     duration,
-    play,
-    pause,
     togglePlay,
     nextTrack,
     previousTrack,

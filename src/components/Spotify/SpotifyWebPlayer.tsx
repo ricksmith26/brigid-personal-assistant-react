@@ -25,8 +25,6 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     seek,
     selectTrackById,
     isReady,
-    play,
-    pause,
     disconnect
   } = useSpotifyPlayer(token, uris, refreshToken);
 
@@ -46,7 +44,7 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
         // togglePlay()
 
         // play()
-        document.getElementById('playPause')?.click()
+        // document.getElementById('playPause')?.click()
       }, 2000);
   
       return () => {
@@ -64,10 +62,10 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
   }, [isReady]);
 
   useEffect(() => {
-    if (isPaused) {
+    if (triggeredPlay) {
       console.log('toggling play<<<<')
       togglePlay()
-      seek(0)
+      // seek(0)
       dispatch(setTriggerPlay(false))
     }
   }, [triggeredPlay])
