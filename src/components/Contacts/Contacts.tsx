@@ -7,7 +7,7 @@ const Contacts = () => {
     const contacts = useAppSelector(selectContacts)
     const patientRecord = useAppSelector(selectPatient)
     const dispatch = useAppDispatch()
-
+    console.log('contacts<<<<<')
     const addNewContacts = (addedContacts: any[]) => {
         dispatch(addContacts(addedContacts))}
 

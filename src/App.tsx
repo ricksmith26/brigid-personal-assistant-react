@@ -94,11 +94,11 @@ function App() {
 
   useEffect(() => {
     const targetPath = `/${mode}`;
-    if (location.pathname !== targetPath) {
-      console.log({recipiant, caller}, '<<<<B4 NAV')
+    // if (location.pathname !== targetPath) {
+      console.log(mode, '<<<<B4 NAV')
       navigate(targetPath);
-    }
-  }, [mode, navigate, location.pathname]);
+    // }
+  }, [mode, navigate]);
 
 
   useEffect(() => {
@@ -131,7 +131,7 @@ function App() {
         <Route path={`/${ModesEnum.SETTINGS}`} element={<div>SETTINGS</div>} />
         <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} />
         {/* <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} /> */}
-        <Route path={`/spotify`} element={<Spotify />} />
+        <Route path={`/${ModesEnum.SPOTIFY}`} element={<Spotify />} />
         <Route path="/callback" element={<Callback/>} />
       </Routes>
       {/* <Spotify/> */}

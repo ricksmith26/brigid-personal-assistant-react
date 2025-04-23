@@ -66,12 +66,13 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
 
           // Play the full track list
           if (uris.length > 0) {
-            if (Number(expiredBy) < Date.now()) dispatch(refreshSpotifyToken(refreshToken))
+            // if (Number(expiredBy) < Date.now()) dispatch(refreshSpotifyToken(refreshToken))
             await axios.put(
               `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`,
               {
                 uris,
                 offset: { position: 0 },
+                position_ms: 0
               },
               {
                 headers: { Authorization: `Bearer ${token}` },
@@ -100,11 +101,30 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
         console.log('The Web Playback SDK is ready to play music!');
         setIsReady(true)
         console.log('Device ID', device_id);
+        (document as any).getElementById('playPause').addEventListener('click', () => {
+          // The player is activated. The player will keep the
+          // playing state once the state is transferred from other
+          // applications.
+          player.activateElement();
+        });
       })
 
       player.connect();
     };
+
   }, [token, uris]);
+  // const playRequest = async() => {
+  //   await axios.put(
+  //     `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`,
+  //     {
+  //       uris,
+  //       offset: { position: 0 },
+  //     },
+  //     {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     }
+  //   );
+  // }
 
   // Time tracking
   useEffect(() => {
@@ -122,6 +142,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
   }, [isPaused, duration]);
 
   // Control methods
+  const disconnect = () => playerRef.current?.disconnect();
   const play = () => playerRef.current?.play()
   const pause = () => playerRef.current?.pause()
   const togglePlay = () => playerRef.current?.togglePlay();
@@ -179,6 +200,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     previousTrack,
     seek,
     selectTrackById,
-    isReady
+    isReady,
+    disconnect
   };
 }

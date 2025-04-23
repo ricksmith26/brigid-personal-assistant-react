@@ -7,6 +7,7 @@ import { selectCaller, selectInBoundCall, selectRecipiant, setAnswered } from ".
 import { useSocket } from "../providers/socketProvider";
 import { SocketEvent } from "../socket/socketMiddleware";
 import { selectUser } from "../redux/slices/AuthSlice";
+import { setTriggerPlay } from "../redux/slices/SpotifySlice";
 
 const useLocalTTS = () => {
     const mode = useAppSelector(selectMode)
@@ -51,6 +52,9 @@ const useLocalTTS = () => {
                 }
                 if (mode === ModesEnum.WEBRTC && transcript.includes("answer") && isCallingInbound) {
                     dispatch(setAnswered())
+                }
+                if (mode === ModesEnum.SPOTIFY && transcript.includes("play") ) {
+                    dispatch(setTriggerPlay(true))
                 }
                 if (transcript.includes(ModesEnum.WINSTON)) {
                     dispatch(setMode(ModesEnum.WINSTON));

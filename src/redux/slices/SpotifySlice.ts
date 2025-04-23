@@ -20,7 +20,8 @@ interface SpotifyState {
     expires_in: string | null,
     expired_by: string | null,
     tracks: SpotifyTrack[],
-    uris: string[]
+    uris: string[],
+    triggerPlay: boolean
 }
 
 const initialState: SpotifyState = {
@@ -29,7 +30,8 @@ const initialState: SpotifyState = {
     expires_in: null,
     expired_by: null,
     tracks: [],
-    uris: []
+    uris: [],
+    triggerPlay: false
 }
 
 // authThunks.ts
@@ -49,7 +51,7 @@ export const refreshSpotifyToken = createAsyncThunk(
       });
       const authReponse = response.data
       console.log(authReponse, '<<authResp')
-      localStorage.setItem('expired_by', `${Date.now()}`);
+      localStorage.setItem('expired_by', `${Date.now() + 3600}`);
       localStorage.setItem('access_token', authReponse.access_token);
       localStorage.setItem('expires_in', authReponse.expires_in);
       return response.data; // contains access_token
@@ -79,9 +81,15 @@ export const spotifySlice = createSlice({
             state.expired_by = action.payload
         },
         setTracks: (state, action) => {
-          console.log("tracks>>", action.payload, '<<<TRACKS')
           state.tracks = [...action.payload]
           state.uris = [...action.payload.map((t: any) => t.uri)];
+          console.log("tracks>>", action.payload.map((t: any) => t.uri), '<<<TRACKS')
+        },
+        setTriggerPlay: (state, action) => {
+          state.triggerPlay = action.payload
+          // setTimeout(() => {
+          //   state.triggerPlay = false
+          // }, 500)
         }
     },
     extraReducers: (builder) => {
@@ -93,7 +101,7 @@ export const spotifySlice = createSlice({
     }
 })
 
-export const { setAccessToken, setRefreshToken, setExpiresIn, setExpiredBy, setTracks } = spotifySlice.actions
+export const { setAccessToken, setRefreshToken, setExpiresIn, setExpiredBy, setTracks, setTriggerPlay } = spotifySlice.actions
 
 export const selectAccessToken = (state: RootState) => state.spotifySlice.access_token
 export const selectRefreshToken = (state: RootState) => state.spotifySlice.refresh_token
@@ -101,5 +109,6 @@ export const selectExpiresIn = (state: RootState) => state.spotifySlice.expires_
 export const selectExpiredBy = (state: RootState) => state.spotifySlice.expired_by
 export const selectTracks = (state: RootState) => state.spotifySlice.tracks
 export const selectUris = (state: RootState) => state.spotifySlice.uris
+export const selectTriggeredPlay = (state: RootState) => state.spotifySlice.triggerPlay
 
 export default spotifySlice.reducer

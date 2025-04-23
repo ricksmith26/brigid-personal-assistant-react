@@ -5,13 +5,14 @@ import PlayPause from './PlayPause';
 import FastForwardOrRewind from './FastForwardOrRewind';
 import PlayerSlider from './PlayerSlider';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { selectTracks, selectUris, setTracks } from '../../redux/slices/SpotifySlice';
+import { selectTracks, selectTriggeredPlay, selectUris, setTracks, setTriggerPlay } from '../../redux/slices/SpotifySlice';
 import { useEffect } from 'react';
 
 const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken: string }) => {
   const dispatch = useAppDispatch()
   const tracks = useAppSelector(selectTracks)
   const uris = useAppSelector(selectUris)
+  const triggeredPlay = useAppSelector(selectTriggeredPlay)
   const {
     isActive,
     isPaused,
@@ -25,7 +26,8 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     selectTrackById,
     isReady,
     play,
-    pause
+    pause,
+    disconnect
   } = useSpotifyPlayer(token, uris, refreshToken);
 
   const getTimerString = (givenSeconds: number) => {
@@ -40,69 +42,84 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
   useEffect(() => {
     if (isReady) {
       const timeout = setTimeout(() => {
-        // togglePlay(); 
-        play()
-      }, 3000);
+        seek(0)
+        // togglePlay()
+
+        // play()
+        document.getElementById('playPause')?.click()
+      }, 2000);
   
       return () => {
-        if (!isPaused) togglePlay();
-        seek(0)
-        pause()
-        dispatch(setTracks([]))
-        clearTimeout(timeout);
+        if (!isPaused) {
+          disconnect()
+          // pause()
+        };
+        // seek(0)
+        // pause()
+
+        // // dispatch(setTracks([]))
+        // clearTimeout(timeout);
       };
     }
   }, [isReady]);
 
-  // useEffect(() => {
-  //   playNextTracks(uris)
-  // }, [tracks])
+  useEffect(() => {
+    if (isPaused) {
+      console.log('toggling play<<<<')
+      togglePlay()
+      seek(0)
+      dispatch(setTriggerPlay(false))
+    }
+  }, [triggeredPlay])
 
   if (!isActive) {
     return <p className="text-center">Loading...</p>;
   }
 
   return (
-    <div className="spotifyPlayContainer">
-      <div className='leftSide'>
-        <img src={currentTrack?.album?.images[0]?.url} alt="album" className="trackImage" />
-      </div>
-      <div className='rightSide'>
-        {tracks.map((track) => {
-          return (
-            <div
-              key={track.id}
-              className={currentTrack?.id !== track?.id ?  'track' : 'currentlyPlayingTrack'}
-              onClick={() => selectTrackById(track.id)}
-              >
-                {track.name}
-              </div>
-          )
-        })}
-      </div>
-      <div className='trackInfo'>
-        <div>
-          <h3 style={{ fontWeight: 900 }}>{currentTrack?.name}</h3>
-          <p style={{ fontWeight: 600 }}>{currentTrack?.artists?.[0]?.name}</p>
+    <>
+      <div className="spotifyPlayContainer">
+        <div className='leftSide'>
+          <img src={currentTrack?.album?.images[0]?.url} alt="album" className="trackImage" />
         </div>
-        <div>
+        <div className='rightSide'>
+          {tracks.map((track, i) => {
+            return (
+              <div
+                id={`${i}_track`}
+                key={track.id}
+                className={currentTrack?.id !== track?.id ?  'track' : 'currentlyPlayingTrack'}
+                onClick={() => selectTrackById(track.id)}
+                >
+                  {track.name}
+                </div>
+            )
+          })}
         </div>
-        <div className='spotifyPlayerControls'>
-          <FastForwardOrRewind isFastforward={false} onClick={previousTrack} />
-          <PlayPause isPlaying={isPaused} onClick={togglePlay} />
-          <FastForwardOrRewind isFastforward={true} onClick={nextTrack} />
+        <div className='trackInfo'>
+          <div>
+            <h3 style={{ fontWeight: 900 }}>{currentTrack?.name}</h3>
+            <p style={{ fontWeight: 600 }}>{currentTrack?.artists?.[0]?.name}</p>
+          </div>
+          <div>
+          </div>
+          <div className='spotifyPlayerControls'>
+            <FastForwardOrRewind isFastforward={false} onClick={previousTrack} />
+            <PlayPause isPlaying={isPaused} onClick={togglePlay} />
+            <FastForwardOrRewind isFastforward={true} onClick={nextTrack} />
+          </div>
+        </div>
+        <div className='sliderContainer'>
+          <PlayerSlider
+            min={'0'}
+            max={`${Math.floor(duration / 1000)}`}
+            value={`${Math.floor(elapsed / 1000)}`}
+            onChange={seek}
+          />
+          <p className='timer'>{`${getTimerString(Math.floor(elapsed / 1000))} /  ${getTimerString(Math.floor(duration / 1000))}`}</p>
         </div>
       </div>
-      <div className='sliderContainer'>
-        <PlayerSlider
-          min={'0'}
-          max={`${Math.floor(duration / 1000)}`}
-          value={`${Math.floor(elapsed / 1000)}`}
-          onChange={seek}
-        />
-        <p className='timer'>{`${getTimerString(Math.floor(elapsed / 1000))} /  ${getTimerString(Math.floor(duration / 1000))}`}</p>
-      </div>
-    </div>
+    </>
   );
 };
 

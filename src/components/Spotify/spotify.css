@@ -1,6 +1,6 @@
 .trackImage {
     border-radius: 16px;
-    max-height: 340px;
+    object-fit: cover;
 }
 
 .spotifyPlayContainer {
@@ -27,17 +27,17 @@
 }
 
 .leftSide {
-    width: calc(50% - 8px);
+    width: calc(33% - 8px);
     margin-right: 16px;
 }
 
 .rightSide {
-    width: calc(50% - 8px);
+    width: calc(67% - 8px);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     overflow: auto;
-    height: 340px;
+    max-height: calc(100vh - 256px);
 }
 
 .playPause {

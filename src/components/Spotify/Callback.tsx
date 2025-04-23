@@ -4,6 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAppDispatch } from '../../redux/hooks';
 import { setAccessToken, setExpiresIn, setRefreshToken } from '../../redux/slices/SpotifySlice';
+import { API_URL } from '../../config/config';
 
 
 const Callback = () => {
@@ -15,7 +16,7 @@ const Callback = () => {
     const code = searchParams.get('code');
     if (code) {
       axios
-        .post('http://localhost:3000/spotify/token', { code })
+        .post(`${API_URL}/spotify/token`, { code })
         .then(res => {
           const { access_token, refresh_token, expires_in } = res.data;
           console.log({ access_token, refresh_token, expires_in })
@@ -25,8 +26,7 @@ const Callback = () => {
           localStorage.setItem('access_token', access_token);
           localStorage.setItem('refresh_token', refresh_token);
           localStorage.setItem('expires_in', expires_in);
-          localStorage.setItem('expired_by', `${Date.now()}`);
-          // Redirect to dashboard
+          localStorage.setItem('expired_by', `${Date.now() + 3600}`);
           navigate('/spotify');
         })
         .catch(err => {
