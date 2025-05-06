@@ -119,6 +119,7 @@ function App() {
   return (
     <div className='app'>
       <Routes>
+        <Route path={`/?:token`} element={<Carousel images={photos} />} />
         <Route path={`/${ModesEnum.LOGIN}`} element={<Login />} />
         <Route path={`/${ModesEnum.PATIENT_FORM}`} element={<PatientForm email={user?.email || ''} setMode={setMode} />} />
         <Route path={`/${ModesEnum.WINSTON}`} element={<Winston email={user?.email} mode={mode} />} />
@@ -130,7 +131,6 @@ function App() {
         <Route path={`/${ModesEnum.VIDEO_CALL}`} element={<div>VIDEO_CALL</div>} />
         <Route path={`/${ModesEnum.SETTINGS}`} element={<div>SETTINGS</div>} />
         <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} />
-        {/* <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} /> */}
         <Route path={`/${ModesEnum.SPOTIFY}`} element={<Spotify />} />
         <Route path="/callback" element={<Callback/>} />
       </Routes>

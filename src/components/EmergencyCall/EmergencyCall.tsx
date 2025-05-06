@@ -62,7 +62,7 @@ const EmergencyCall: React.FC = () => {
 
     const targetURI = UserAgent.makeURI(`sip:${target}@asterisk.brigid-personal-assistant.com`);
     if (!targetURI) return alert('Invalid target');
-
+    
     const inviterOptions: InviterOptions = {
       sessionDescriptionHandlerOptions: {
         constraints: {
@@ -138,8 +138,22 @@ const EmergencyCall: React.FC = () => {
           </Tile>
         </div>}
       <div>
-        <video className="localVideo" ref={localVideoRef} autoPlay playsInline muted style={{ position: 'fixed', bottom: '36px', right: '36px', width: "300px", height: "200px", objectFit: 'cover', zIndex: 99 }} />
-        <video ref={remoteVideoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: 'cover' }} />
+        <video
+          className="localVideo"
+          ref={localVideoRef}
+          autoPlay
+          playsInline
+          muted
+          style={
+            { position: 'fixed',
+              bottom: '36px',
+              right: '36px',
+              width: "300px",
+              height: "200px",
+              objectFit: 'cover',
+              zIndex: 99 }}
+              />
+        <video ref={remoteVideoRef} autoPlay playsInline style={{ width: "100vh", height: "100vw", objectFit: 'cover' }} />
       </div>
     </div>
   );

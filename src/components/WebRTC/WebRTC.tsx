@@ -203,7 +203,7 @@ export const WebRTC = () => {
             {outgoingCall
                 && <OutgoingCall
                     isOutgoing={outgoingCall}
-                    recipiant={getFullNameByEmail(caller, contacts)}
+                    recipiant={getFullNameByEmail(recipiant, contacts)}
                     hangupCall={rejectCall}/>}
             {incomingCall
                 && <IncomingCall

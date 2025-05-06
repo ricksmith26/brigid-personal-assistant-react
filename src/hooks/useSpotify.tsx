@@ -56,7 +56,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
             'https://api.spotify.com/v1/me/player',
             {
               device_ids: [device_id],
-              play: true
+              play: false
             },
             {
               headers: { Authorization: `Bearer ${token}` },
