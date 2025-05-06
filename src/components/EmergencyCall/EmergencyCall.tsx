@@ -11,6 +11,7 @@ import { useAppDispatch } from '../../redux/hooks';
 import { setMode } from '../../redux/slices/ModeSlice';
 import { ModesEnum } from '../../types/Modes';
 import { Tile } from '../Tile/Tile';
+import { Videos } from '../WebRTC/Videos/Videos';
 
 const EmergencyCall: React.FC = () => {
   const [target, setTarget] = useState('200');
@@ -137,24 +138,7 @@ const EmergencyCall: React.FC = () => {
             </div>
           </Tile>
         </div>}
-      <div>
-        <video
-          className="localVideo"
-          ref={localVideoRef}
-          autoPlay
-          playsInline
-          muted
-          style={
-            { position: 'fixed',
-              bottom: '36px',
-              right: '36px',
-              width: "300px",
-              height: "200px",
-              objectFit: 'cover',
-              zIndex: 99 }}
-              />
-        <video ref={remoteVideoRef} autoPlay playsInline style={{ width: "100vh", height: "100vw", objectFit: 'cover' }} />
-      </div>
+      <Videos localVideoRef={localVideoRef} remoteVideoRef={remoteVideoRef} areVisible={true} rejectCall={() => {}}/>
     </div>
   );
 };
