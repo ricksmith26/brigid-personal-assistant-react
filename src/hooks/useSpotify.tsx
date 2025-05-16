@@ -21,6 +21,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
   const [elapsed, setElapsed] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [isReady, setIsReady] = useState(false)
+  const [playerQueue, setPlayerQueue] = useState([])
   const expiredBy = useAppSelector(selectExpiredBy)
   const dispatch = useAppDispatch()
 
@@ -88,9 +89,17 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
         }
       });
 
-      player.addListener('player_state_changed', (state: any) => {
-        console.log(state.track_window.current_track, '<<<<state.track_window.current_track')
-        console.log(state.track_window.next_track, '<<<<state.track_window.next_track')
+      player.addListener('player_state_changed', async(state: any) => {
+        const queue =  await axios.get(
+          `https://api.spotify.com/v1/me/player/queue`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log(queue, "<<<<queue")
+        setPlayerQueue(queue.data.queue)
+        console.log(state.track_window.current_track, '<<<<state.track_window.current_track2')
+        console.log(state.track_window.next_track, '<<<<state.track_window.next_track3')
         if (!state) return;
         setCurrentTrack(state.track_window.current_track);
         setIsPaused(state.paused);
@@ -188,6 +197,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     seek,
     selectTrackById,
     isReady,
-    disconnect
+    disconnect,
+    playerQueue
   };
 }

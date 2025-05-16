@@ -25,7 +25,8 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
     seek,
     selectTrackById,
     isReady,
-    disconnect
+    disconnect,
+    playerQueue
   } = useSpotifyPlayer(token, uris, refreshToken);
 
   const getTimerString = (givenSeconds: number) => {
@@ -81,11 +82,11 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
           <img src={currentTrack?.album?.images[0]?.url} alt="album" className="trackImage" />
         </div>
         <div className='rightSide'>
-          {tracks.map((track, i) => {
+          {playerQueue.map((track: any, i) => {
             return (
               <div
                 id={`${i}_track`}
-                key={track.id}
+                key={track.id + i}
                 className={currentTrack?.id !== track?.id ?  'track' : 'currentlyPlayingTrack'}
                 onClick={() => selectTrackById(track.id)}
                 >
