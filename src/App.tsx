@@ -93,11 +93,11 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const targetPath = `/${mode}`;
-    // if (location.pathname !== targetPath) {
+    if (true){
+      const targetPath = `/${mode}`;
       console.log(mode, '<<<<B4 NAV')
       navigate(targetPath);
-    // }
+    }
   }, [mode, navigate]);
 
 
