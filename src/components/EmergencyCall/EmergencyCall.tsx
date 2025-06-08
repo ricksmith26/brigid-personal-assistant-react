@@ -12,9 +12,14 @@ import { setMode } from '../../redux/slices/ModeSlice';
 import { ModesEnum } from '../../types/Modes';
 import { Tile } from '../Tile/Tile';
 import { Videos } from '../WebRTC/Videos/Videos';
+import { EmergencyCallCredentialsType } from '../../types/EmergencyCallCredentials';
+interface EmergencyCallProps {
+  emergencyCallCredentials: EmergencyCallCredentialsType | null;
+  agentEmergencyCallCredentials: EmergencyCallCredentialsType | null
+}
 
-const EmergencyCall: React.FC = () => {
-  const [target, setTarget] = useState('200');
+const EmergencyCall = ({ emergencyCallCredentials, agentEmergencyCallCredentials }: EmergencyCallProps) => {
+  const [target, setTarget] = useState(agentEmergencyCallCredentials?.extension);
   const [registered, setRegistered] = useState(false);
   const userAgentRef = useRef<UserAgent | null>(null);
   const registererRef = useRef<Registerer | null>(null);
@@ -25,12 +30,12 @@ const EmergencyCall: React.FC = () => {
   const dispatch = useAppDispatch()
 
   const config: UserAgentOptions = {
-    uri: UserAgent.makeURI('sip:User3@asterisk.brigid-personal-assistant.com'),
+    uri: UserAgent.makeURI(emergencyCallCredentials?.sipUri || ''),
     transportOptions: {
-      server: 'wss://asterisk.brigid-personal-assistant.com:4443/ws',
+      server: emergencyCallCredentials?.websocketUrl,
     },
-    authorizationUsername: 'User3',
-    authorizationPassword: '1234',
+    authorizationUsername: emergencyCallCredentials?.username,
+    authorizationPassword: emergencyCallCredentials?.password,
     sessionDescriptionHandlerFactoryOptions: {
       peerConnectionOptions: {
         rtcConfiguration: {
@@ -39,7 +44,6 @@ const EmergencyCall: React.FC = () => {
       }
     }
   };
-
   useEffect(() => {
     const userAgent = new UserAgent(config);
     userAgentRef.current = userAgent;
@@ -60,10 +64,13 @@ const EmergencyCall: React.FC = () => {
 
   const handleCall = async () => {
     if (!userAgentRef.current || !target) return;
-
-    const targetURI = UserAgent.makeURI(`sip:${target}@asterisk.brigid-personal-assistant.com`);
+    const targetURI = UserAgent.makeURI(
+      agentEmergencyCallCredentials
+        ? `${agentEmergencyCallCredentials?.sipUri}`.replace(
+          agentEmergencyCallCredentials.username, agentEmergencyCallCredentials.extension)
+        : '');
     if (!targetURI) return alert('Invalid target');
-    
+
     const inviterOptions: InviterOptions = {
       sessionDescriptionHandlerOptions: {
         constraints: {
@@ -72,7 +79,7 @@ const EmergencyCall: React.FC = () => {
         }
       }
     };
-
+    console.log({ inviter: emergencyCallCredentials, agent: targetURI, agentEmergencyCallCredentials }, "+++++++++++++")
     const inviter = new Inviter(userAgentRef.current, targetURI, inviterOptions);
     sessionRef.current = inviter;
 
@@ -122,10 +129,11 @@ const EmergencyCall: React.FC = () => {
   };
 
   useEffect(() => {
-    if (registered) {
+    if (!!agentEmergencyCallCredentials) {
+      console.log(agentEmergencyCallCredentials, '<<<<agentEmergencyCallCredentialsagentEmergencyCallCredentials')
       handleCall()
     }
-  }, [registered])
+  }, [agentEmergencyCallCredentials])
 
   return (
     <div>
@@ -138,7 +146,7 @@ const EmergencyCall: React.FC = () => {
             </div>
           </Tile>
         </div>}
-      <Videos localVideoRef={localVideoRef} remoteVideoRef={remoteVideoRef} areVisible={true} rejectCall={() => {}}/>
+      <Videos localVideoRef={localVideoRef} remoteVideoRef={remoteVideoRef} areVisible={true} rejectCall={() => { }} />
     </div>
   );
 };

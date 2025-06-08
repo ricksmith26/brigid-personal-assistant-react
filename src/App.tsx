@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './App.css'
 import { } from 'react-dom'
 import Winston from './winston/page.js'
@@ -43,6 +43,8 @@ import Contacts from './components/Contacts/Contacts.js';
 import Spotify from './components/Spotify/Spotify.tsx';
 import Callback from './components/Spotify/Callback.tsx';
 import { setTracks } from './redux/slices/SpotifySlice.ts';
+import { getEmergencyCredentials } from './api/EmergencyContactApi.ts';
+import { EmergencyCallCredentialsType } from './types/EmergencyCallCredentials.ts';
 
 
 function App() {
@@ -54,6 +56,8 @@ function App() {
   const { socket } = useSocket();
   const recipiant = useAppSelector(selectRecipiant)
   const caller = useAppSelector(selectCaller)
+  const [emergencyCallCredentials, setEmergencyCallCredentials] = useState<EmergencyCallCredentialsType|null>(null)
+  const [agentEmergencyCallCredentials, setAgentEmergencyCallCredentials] = useState<EmergencyCallCredentialsType|null>(null)
 
   useLocalTTS()
 
@@ -72,7 +76,13 @@ function App() {
       }
     }),
       socket.on(SocketEvent.EmergencyCall, () => {
-        dispatch(setMode('EMERGENCY'))
+        getEmergencyCredentials().then((credentials: EmergencyCallCredentialsType) => {
+          console.log(credentials, "<<<<<credentialscredentialscredentials")
+          setEmergencyCallCredentials(credentials)
+          setTimeout(() => {
+            dispatch(setMode('EMERGENCY'))
+          }, 1000)
+        })
       })
     socket.on(SocketEvent.EventNotifcation, (event: any) => {
       dispatch(setNewMessage(`Please read out this reminder: This a reminder, ${event.title} at ${event.time}, and the time is ${event.time}.`))
@@ -87,6 +97,11 @@ function App() {
       dispatch(setTracks(tracks))
       dispatch(setMode(mode))
     })
+    socket.on('emergencyCallConnection', (pairing: {agent: EmergencyCallCredentialsType, customer: EmergencyCallCredentialsType}) => {
+      console.log(pairing, '<<<{ mode, tracks }')
+      setAgentEmergencyCallCredentials(pairing.agent)
+
+    })
   }, [])
   useEffect(() => {
     setUpSocket(socket)
@@ -95,8 +110,9 @@ function App() {
   useEffect(() => {
     if (true){
       const targetPath = `/${mode}`;
-      console.log(mode, '<<<<B4 NAV')
-      navigate(targetPath);
+    
+        navigate(targetPath);
+
     }
   }, [mode, navigate]);
 
@@ -125,7 +141,11 @@ function App() {
         <Route path={`/${ModesEnum.WINSTON}`} element={<Winston email={user?.email} mode={mode} />} />
         <Route path={`/${ModesEnum.IDLE}`} element={<Carousel images={photos} />} />
         <Route path={`/${ModesEnum.WEBRTC}`} element={<WebRTC />} />
-        <Route path={`/${ModesEnum.EMERGENCY_CALL}`} element={<EmergencyCall />} />
+        <Route
+          path={`/${ModesEnum.EMERGENCY_CALL}`}
+          element={emergencyCallCredentials 
+            ? <EmergencyCall emergencyCallCredentials={emergencyCallCredentials} agentEmergencyCallCredentials={agentEmergencyCallCredentials}/>
+            : <></>} />
         <Route path={`/${ModesEnum.CONTACTS}`} element={<Contacts/>} />
         <Route path={`/${ModesEnum.PHONE_CALL}`} element={<div>PHONE_CALL</div>} />
         <Route path={`/${ModesEnum.VIDEO_CALL}`} element={<div>VIDEO_CALL</div>} />

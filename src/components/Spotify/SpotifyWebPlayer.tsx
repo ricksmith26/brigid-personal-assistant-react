@@ -65,7 +65,7 @@ const SpotifyWebPlayer = ({ token, refreshToken }: { token: string, refreshToken
   useEffect(() => {
     if (triggeredPlay) {
       console.log('toggling play<<<<')
-      togglePlay()
+      // togglePlay()
       // seek(0)
       dispatch(setTriggerPlay(false))
     }

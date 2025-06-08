@@ -31,14 +31,12 @@ const Login = () => {
     return (
         <div className="loginBackGround">
             <img src={logo} />
-
             <div style={{ position: 'relative', marginTop: '24px', width: "100%" }}>
                 <div className="centered-container">
                     <div className="appearing-container" style={{opacity: loaded ? 1 : 0}}>
                         <Button onClick={() => window.location.href = apiUrl}>Login with Google</Button>
                     </div>
                 </div>
-
             </div>
         </div>
     );

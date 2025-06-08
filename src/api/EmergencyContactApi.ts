@@ -59,7 +59,7 @@ export const createRelatedPersons = async (patientId: string, relatedPersons: Re
     console.log("📤 Sending FHIR RelatedPersons:", fhirRelatedPersons);
 
     // ✅ Send data to API with correct payload structure
-    const response = await axiosIns.post(`${process.env.API_URL}/relatedPerson`, 
+    const response = await axiosIns.post(`${process.env.API_URL}/relatedPerson`,
       fhirRelatedPersons, // 👈 Wrap in an object
       {
         headers: { "Content-Type": "application/json" },
@@ -85,3 +85,13 @@ export const getRelatedPersonsByPatientId = async (patientId: string) => {
     throw error;
   }
 };
+
+export const getEmergencyCredentials = async () => {
+  try {
+    const response = await axiosIns.get(`${process.env.API_URL}/asterisk/getInactiveCustomer`);
+    return response.data;
+  } catch (error) {
+    console.error("🚨 Error fetching getInactiveCustomer:", error);
+    throw error;
+  }
+}

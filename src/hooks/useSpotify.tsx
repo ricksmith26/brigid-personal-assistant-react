@@ -32,6 +32,7 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
     script.async = true;
     document.body.appendChild(script);
 
+
     return () => {
       document.body.removeChild(script); // ✅ return a cleanup function
     };
@@ -80,6 +81,10 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
+            setTimeout(() => {
+
+              player.play()
+            }, 1000)
           }
           console.log('The Web Playback SDK is ready to play music!');
           setIsReady(true)
@@ -89,8 +94,8 @@ export function useSpotifyPlayer(token: string, uris: string[], refreshToken: st
         }
       });
 
-      player.addListener('player_state_changed', async(state: any) => {
-        const queue =  await axios.get(
+      player.addListener('player_state_changed', async (state: any) => {
+        const queue = await axios.get(
           `https://api.spotify.com/v1/me/player/queue`,
           {
             headers: { Authorization: `Bearer ${token}` },
