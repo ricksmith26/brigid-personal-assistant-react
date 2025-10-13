@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "bucket_name" {
   description = "S3 bucket name for website hosting"
   type        = string
-  default     = "brigid-personal-assistant-app"
+  default     = "brigid-personal-assistant-web"
 }
 
 variable "domain_name" {
