@@ -114,3 +114,10 @@ jobs:
           echo "- S3 Bucket: \`${{ steps.outputs.outputs.s3_bucket_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- CloudFront Distribution: \`${{ steps.outputs.outputs.cloudfront_distribution_id }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Website URL: ${{ steps.outputs.outputs.website_url }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    name: Deploy Application
+    needs: terraform
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

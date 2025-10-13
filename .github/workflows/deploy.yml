@@ -4,7 +4,12 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'terraform/**'
+      - '**.md'
+      - '.gitignore'
   workflow_dispatch:
+  workflow_call:
 
 env:
   AWS_REGION: eu-west-2
