@@ -44,14 +44,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Get Terraform outputs
-        id: terraform
-        run: |
-          cd terraform
-          echo "bucket_name=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
-          echo "distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
-        continue-on-error: true
-
       - name: Sync to S3
         run: |
           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
