@@ -33,7 +33,7 @@ const useLocalTTS = () => {
                 startSpeechToText();
             }
             const lastResult = results[results.length - 1];
-            console.log(lastResult, '<<<<<<lastResult')
+            console.log(lastResult, '<<<<<<lastResult', results)
 
             if (lastResult && typeof lastResult === "string") {
                 const transcript = lastResult.toLowerCase().trim();
