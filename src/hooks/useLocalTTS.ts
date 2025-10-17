@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import useSpeechToText from "react-hook-speech-to-text";
+import useSpeechToText, { ResultType } from "react-hook-speech-to-text";
 import { ModesEnum } from "../types/Modes";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectMode, setMode } from "../redux/slices/ModeSlice";
@@ -8,6 +8,11 @@ import { useSocket } from "../providers/socketProvider";
 import { SocketEvent } from "../socket/socketMiddleware";
 import { selectUser } from "../redux/slices/AuthSlice";
 import { setTriggerPlay } from "../redux/slices/SpotifySlice";
+
+type TTSType = {
+    transcript: string
+    timestamp: number
+}
 
 const useLocalTTS = () => {
     const mode = useAppSelector(selectMode)
@@ -33,11 +38,11 @@ const useLocalTTS = () => {
             if (!isRecording) {
                 startSpeechToText();
             }
-            const lastResult = results[results.length - 1];
+            const lastResult: string | ResultType = results[results.length - 1]
             console.log(lastResult, '<<<<<<lastResult', results)
 
-            if (lastResult && typeof lastResult === "string") {
-                const transcript = lastResult.toLowerCase().trim();
+            if (lastResult) {
+                const transcript = (typeof lastResult === "string" ? lastResult : lastResult.transcript).toLowerCase().trim();
 
                 if (transcript.includes("stop listening")) {
                     console.log("set to idle");
@@ -64,9 +69,9 @@ const useLocalTTS = () => {
                 if (transcript.includes("dashboard")) {
                     dispatch(setMode('dashboard'));
                 }
-                else if (results.length > 50) {
-                    setResults([])
-                }
+            }
+            else if (results.length > 50) {
+                setResults([])
             }
 
         } catch (error) {
