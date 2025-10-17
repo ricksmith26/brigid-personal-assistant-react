@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSpeechToText, { ResultType } from "react-hook-speech-to-text";
 import { ModesEnum } from "../types/Modes";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
@@ -23,21 +23,87 @@ const useLocalTTS = () => {
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
     const { socket } = useSocket();
+    const [isSupported, setIsSupported] = useState(true);
+    const [permissionError, setPermissionError] = useState<string | null>(null);
+    const hasStartedRef = useRef(false);
+
     const {
-        // error,
+        error,
         isRecording,
         results,
         startSpeechToText,
-        setResults
+        setResults,
+        stopSpeechToText
     } = useSpeechToText({
         continuous: true,
-        useLegacyResults: false
+        useLegacyResults: false,
+        timeout: 10000,
+        speechRecognitionProperties: {
+            interimResults: true
+        }
     });
+
+    // Check browser compatibility on mount
     useEffect(() => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            console.error("Speech Recognition API is not supported in this browser");
+            setIsSupported(false);
+            return;
+        }
+
+        // Check for HTTPS or localhost
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            console.warn("Speech Recognition requires HTTPS or localhost");
+            setPermissionError("Speech Recognition requires HTTPS");
+        }
+
+        // Request microphone permissions
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(() => {
+                    console.log("Microphone permission granted");
+                    setPermissionError(null);
+                })
+                .catch((err) => {
+                    console.error("Microphone permission denied:", err);
+                    setPermissionError("Microphone permission denied");
+                });
+        }
+    }, []);
+
+    // Handle speech recognition start/restart
+    useEffect(() => {
+        if (!isSupported || permissionError) {
+            console.log("Speech recognition not available:", { isSupported, permissionError });
+            return;
+        }
+
+        // Start speech recognition on mount
+        if (!hasStartedRef.current && !isRecording) {
+            console.log("Starting speech recognition...");
+            startSpeechToText();
+            hasStartedRef.current = true;
+        }
+
+        // Handle errors and restart if needed
+        if (error) {
+            console.error("Speech Recognition Error:", error);
+            // Reset and try to restart after error
+            setTimeout(() => {
+                if (!isRecording) {
+                    console.log("Restarting speech recognition after error...");
+                    startSpeechToText();
+                }
+            }, 1000);
+        }
+    }, [isSupported, permissionError, isRecording, error, startSpeechToText]);
+
+    // Process speech results
+    useEffect(() => {
+        if (!results || results.length === 0) return;
+
         try {
-            if (!isRecording) {
-                startSpeechToText();
-            }
             const lastResult: string | ResultType = results[results.length - 1]
             console.log(lastResult, '<<<<<<lastResult', results)
 
@@ -51,6 +117,7 @@ const useLocalTTS = () => {
                 if (transcript.includes("stop listening")) {
                     console.log("set to idle");
                     dispatch(setMode(ModesEnum.IDLE));
+                    stopSpeechToText();
                 }
                 if (mode === ModesEnum.WEBRTC && (transcript.includes("hang up") || transcript.includes("end call"))) {
                     socket.emit(SocketEvent.HangUp, { toEmail: recipiant.length > 0 ? recipiant : user?.email });
@@ -70,15 +137,18 @@ const useLocalTTS = () => {
                     dispatch(setMode('dashboard'));
                 }
             }
-            else if (results.length > 50) {
+
+            // Clean up old results to prevent memory issues
+            if (results.length > 50) {
                 setResults([])
             }
 
         } catch (error) {
-            console.log("Speech Recognition Error:", error)
+            console.log("Speech Recognition Processing Error:", error)
         }
 
-    }, [results, isRecording]);
+    }, [results, mode, recipiant, caller, user, dispatch, socket, isCallingInbound, setResults, stopSpeechToText]);
+
     return results
 }
 
