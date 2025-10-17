@@ -26,6 +26,7 @@ const useLocalTTS = () => {
         setResults
     } = useSpeechToText({
         continuous: true,
+        useLegacyResults: false
     });
     useEffect(() => {
         try {
