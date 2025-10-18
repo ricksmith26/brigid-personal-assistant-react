@@ -35,14 +35,15 @@ const useLocalTTS = () => {
         results,
         startSpeechToText,
         setResults,
-        stopSpeechToText
+        stopSpeechToText,
+        interimResult
     } = useSpeechToText({
         continuous: true,
         useLegacyResults: false,
         timeout: 30000, // Increased timeout for Raspberry Pi
         speechRecognitionProperties: {
             interimResults: true,
-            lang: 'en-US', // Explicitly set language
+            lang: navigator.language || 'en-US', // Use browser language
             maxAlternatives: 1
         }
     });
@@ -85,12 +86,28 @@ const useLocalTTS = () => {
 
         // Start speech recognition on mount
         if (!hasStartedRef.current && !isRecording) {
-            console.log("Starting speech recognition on Raspberry Pi...");
+            console.log("Starting speech recognition...");
             console.log("Browser:", navigator.userAgent);
             console.log("Language:", navigator.language);
-            startSpeechToText();
-            hasStartedRef.current = true;
-            restartAttempts.current = 0;
+            console.log("isRecording before start:", isRecording);
+
+            try {
+                startSpeechToText();
+                hasStartedRef.current = true;
+                restartAttempts.current = 0;
+                console.log("✓ startSpeechToText() called successfully");
+            } catch (err) {
+                console.error("Error calling startSpeechToText:", err);
+            }
+        }
+
+        // Log recording status changes
+        console.log("Recording status - isRecording:", isRecording, "hasStarted:", hasStartedRef.current, "attempts:", restartAttempts.current);
+
+        if (isRecording && restartAttempts.current === 0) {
+            console.log("✓ Speech recognition is actively recording");
+        } else if (hasStartedRef.current && !isRecording && !error) {
+            console.warn("⚠ Started but not recording yet - waiting for speech recognition to activate");
         }
 
         // Handle errors and restart if needed
