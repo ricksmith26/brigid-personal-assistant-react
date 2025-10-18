@@ -101,6 +101,7 @@ const useLocalTTS = () => {
 
     // Process speech results
     useEffect(() => {
+        console.log(results, '<><><><>><><><>')
         if (!results || results.length === 0) return;
 
         try {
