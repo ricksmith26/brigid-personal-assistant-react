@@ -26,6 +26,8 @@ const useLocalTTS = () => {
     const [isSupported, setIsSupported] = useState(true);
     const [permissionError, setPermissionError] = useState<string | null>(null);
     const hasStartedRef = useRef(false);
+    const restartAttempts = useRef(0);
+    const MAX_RESTART_ATTEMPTS = 5;
 
     const {
         error,
@@ -37,9 +39,11 @@ const useLocalTTS = () => {
     } = useSpeechToText({
         continuous: true,
         useLegacyResults: false,
-        timeout: 10000,
+        timeout: 30000, // Increased timeout for Raspberry Pi
         speechRecognitionProperties: {
-            interimResults: true
+            interimResults: true,
+            lang: 'en-US', // Explicitly set language
+            maxAlternatives: 1
         }
     });
 
@@ -81,35 +85,56 @@ const useLocalTTS = () => {
 
         // Start speech recognition on mount
         if (!hasStartedRef.current && !isRecording) {
-            console.log("Starting speech recognition...");
+            console.log("Starting speech recognition on Raspberry Pi...");
+            console.log("Browser:", navigator.userAgent);
+            console.log("Language:", navigator.language);
             startSpeechToText();
             hasStartedRef.current = true;
+            restartAttempts.current = 0;
         }
 
         // Handle errors and restart if needed
         if (error) {
             console.error("Speech Recognition Error:", error);
+            console.error("Error type:", typeof error === 'string' ? error : (error as any)?.message || 'Unknown error');
+
+            // Prevent infinite restart loop
+            if (restartAttempts.current >= MAX_RESTART_ATTEMPTS) {
+                console.error(`Failed to start speech recognition after ${MAX_RESTART_ATTEMPTS} attempts. Stopping.`);
+                setPermissionError("Speech recognition failed to initialize");
+                return;
+            }
+
             // Reset and try to restart after error
             setTimeout(() => {
                 if (!isRecording) {
-                    console.log("Restarting speech recognition after error...");
+                    restartAttempts.current += 1;
+                    console.log(`Restarting speech recognition after error... (attempt ${restartAttempts.current}/${MAX_RESTART_ATTEMPTS})`);
                     startSpeechToText();
                 }
-            }, 1000);
+            }, 2000); // Increased delay for Pi
+        } else {
+            // Reset counter on success
+            if (isRecording && restartAttempts.current > 0) {
+                console.log("Speech recognition started successfully!");
+                restartAttempts.current = 0;
+            }
         }
     }, [isSupported, permissionError, isRecording, error, startSpeechToText]);
 
     // Process speech results
     useEffect(() => {
-        console.log(results, '<><><><>><><><>')
+        console.log('STT Results received:', results.length, 'results')
         if (!results || results.length === 0) return;
 
         try {
             const lastResult: string | ResultType = results[results.length - 1]
-            console.log(lastResult, '<<<<<<lastResult', results)
+            console.log('Last result:', lastResult)
+            console.log('Is recording:', isRecording)
 
             if (lastResult) {
                 const transcript = (typeof lastResult === "string" ? lastResult : lastResult.transcript).toLowerCase().trim();
+                console.log('Processed transcript:', transcript);
 
                 if (transcript.includes("stop listening")) {
                     console.log("set to idle");
