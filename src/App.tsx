@@ -42,6 +42,7 @@ import {
 import Contacts from './components/Contacts/Contacts.js';
 import Spotify from './components/Spotify/Spotify.tsx';
 import Callback from './components/Spotify/Callback.tsx';
+import WhisperTest from './components/WhisperTest/WhisperTest.tsx';
 import { setTracks } from './redux/slices/SpotifySlice.ts';
 import { getEmergencyCredentials } from './api/EmergencyContactApi.ts';
 import { EmergencyCallCredentialsType } from './types/EmergencyCallCredentials.ts';
@@ -153,6 +154,7 @@ function App() {
         <Route path={`/${ModesEnum.DASHBOARD}`} element={<DashBoard />} />
         <Route path={`/${ModesEnum.SPOTIFY}`} element={<Spotify />} />
         <Route path="/callback" element={<Callback/>} />
+        <Route path="/whisper-test" element={<WhisperTest />} />
       </Routes>
       {/* <Spotify/> */}
     </div>
