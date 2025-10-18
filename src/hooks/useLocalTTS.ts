@@ -61,13 +61,29 @@ const useLocalTTS = () => {
             recognition.onspeechend = () => console.log("🤐 Recognition: onspeechend");
             recognition.onsoundend = () => console.log("🔇 Recognition: onsoundend");
             recognition.onaudioend = () => console.log("🎵 Recognition: onaudioend");
-            recognition.onend = () => console.log("⏹️ Recognition: onend");
+
             recognition.onerror = (event: any) => {
                 console.error("❌ Recognition error:", event.error, event);
                 if (event.error === 'no-speech') {
-                    console.warn("No speech detected - is your microphone working and unmuted?");
+                    console.log("⏸️ No speech timeout - this is normal, will auto-restart");
+                    // Don't log as warning - this is expected behavior
                 } else if (event.error === 'network') {
                     console.error("Network error - speech recognition requires internet connection");
+                } else if (event.error === 'aborted') {
+                    console.log("Recognition aborted - will auto-restart");
+                }
+            };
+
+            recognition.onend = () => {
+                console.log("⏹️ Recognition: onend - restarting...");
+                // Automatically restart when recognition ends
+                if (browserSupportsSpeechRecognition) {
+                    setTimeout(() => {
+                        SpeechRecognition.startListening({
+                            continuous: true,
+                            language: navigator.language || 'en-US'
+                        });
+                    }, 100);
                 }
             };
         }
