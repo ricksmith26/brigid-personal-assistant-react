@@ -51,6 +51,11 @@ const useLocalTTS = () => {
         const startListening = async () => {
             try {
                 console.log("Starting continuous speech recognition...");
+
+                // Check microphone permission first
+                const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+                console.log("🎤 Microphone permission:", permission.state);
+
                 await SpeechRecognition.startListening({
                     continuous: true,
                     language: navigator.language || 'en-US'
@@ -67,7 +72,7 @@ const useLocalTTS = () => {
         }
 
         // Log listening status
-        console.log("Listening status:", listening);
+        console.log("👂 Listening status:", listening);
 
         // Cleanup function - stop listening when component unmounts
         return () => {
@@ -95,13 +100,18 @@ const useLocalTTS = () => {
         return () => clearTimeout(checkAndRestart);
     }, [listening, browserSupportsSpeechRecognition]);
 
+    // Log transcript changes for debugging
+    useEffect(() => {
+        console.log('📝 Transcript updated:', transcript ? `"${transcript}"` : '(empty)');
+    }, [transcript]);
+
     // Process speech transcript
     useEffect(() => {
         if (!transcript || transcript.length === 0) return;
 
         try {
             const processedTranscript = transcript.toLowerCase().trim();
-            console.log('Transcript:', processedTranscript);
+            console.log('✅ Processing transcript:', processedTranscript);
 
             if (processedTranscript.includes("stop listening")) {
                 console.log("Stopping speech recognition - set to idle");
