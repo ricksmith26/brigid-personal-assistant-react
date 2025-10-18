@@ -22,7 +22,8 @@ const useLocalTTS = () => {
         transcript,
         listening,
         resetTranscript,
-        browserSupportsSpeechRecognition
+        browserSupportsSpeechRecognition,
+        isMicrophoneAvailable
     } = useSpeechRecognition();
 
     // Check browser compatibility on mount
@@ -40,12 +41,35 @@ const useLocalTTS = () => {
         console.log("Speech recognition supported!");
         console.log("Browser:", navigator.userAgent);
         console.log("Language:", navigator.language);
-    }, [browserSupportsSpeechRecognition]);
+        console.log("🎤 Microphone available:", isMicrophoneAvailable);
+    }, [browserSupportsSpeechRecognition, isMicrophoneAvailable]);
 
     // Start speech recognition on mount and keep it running
     useEffect(() => {
         if (!browserSupportsSpeechRecognition) {
             return;
+        }
+
+        // Get access to the underlying recognition object to add event listeners
+        const recognition = (SpeechRecognition as any).getRecognition();
+
+        if (recognition) {
+            recognition.onstart = () => console.log("🟢 Recognition: onstart");
+            recognition.onaudiostart = () => console.log("🎵 Recognition: onaudiostart - audio capture started");
+            recognition.onsoundstart = () => console.log("🔊 Recognition: onsoundstart - sound detected");
+            recognition.onspeechstart = () => console.log("🗣️ Recognition: onspeechstart - speech detected!");
+            recognition.onspeechend = () => console.log("🤐 Recognition: onspeechend");
+            recognition.onsoundend = () => console.log("🔇 Recognition: onsoundend");
+            recognition.onaudioend = () => console.log("🎵 Recognition: onaudioend");
+            recognition.onend = () => console.log("⏹️ Recognition: onend");
+            recognition.onerror = (event: any) => {
+                console.error("❌ Recognition error:", event.error, event);
+                if (event.error === 'no-speech') {
+                    console.warn("No speech detected - is your microphone working and unmuted?");
+                } else if (event.error === 'network') {
+                    console.error("Network error - speech recognition requires internet connection");
+                }
+            };
         }
 
         const startListening = async () => {
@@ -55,6 +79,20 @@ const useLocalTTS = () => {
                 // Check microphone permission first
                 const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
                 console.log("🎤 Microphone permission:", permission.state);
+
+                // Test microphone access
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    console.log("🎙️ Microphone stream obtained:", stream.getAudioTracks()[0].label);
+
+                    // Don't stop the stream - let speech recognition use it
+                    // But log the audio settings
+                    const audioTrack = stream.getAudioTracks()[0];
+                    const settings = audioTrack.getSettings();
+                    console.log("🔊 Audio settings:", settings);
+                } catch (micError) {
+                    console.error("❌ Failed to get microphone stream:", micError);
+                }
 
                 await SpeechRecognition.startListening({
                     continuous: true,
