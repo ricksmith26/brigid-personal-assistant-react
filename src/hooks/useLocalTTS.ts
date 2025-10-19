@@ -115,11 +115,6 @@ const useLocalTTS = () => {
                     console.log("set to idle");
                     dispatch(setMode(ModesEnum.IDLE));
                 }
-                if (transcript.includes("stop listening")) {
-                    console.log("set to idle");
-                    dispatch(setMode(ModesEnum.IDLE));
-                    stopSpeechToText();
-                }
                 if (mode === ModesEnum.WEBRTC && (transcript.includes("hang up") || transcript.includes("end call"))) {
                     socket.emit(SocketEvent.HangUp, { toEmail: recipiant.length > 0 ? recipiant : user?.email });
                     socket.emit(SocketEvent.HangUp, { toEmail: caller.length > 0 ? caller : user?.email });
