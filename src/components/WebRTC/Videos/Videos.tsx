@@ -13,14 +13,13 @@ export const Videos = ({ areVisible, localVideoRef, remoteVideoRef }: VideosProp
     return (
         <>
             {<div style={{ visibility: areVisible ? 'visible' : 'hidden' }}>
-                <div style={{ position: 'fixed', top: 0, left: 0 }}>
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
                     <video ref={remoteVideoRef} autoPlay playsInline
                         style={{
-                            position: 'fixed',
-                            right: 0,
-                            bottom: 0,
-                            minWidth: '100%',
-                            minHeight: '100%',
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            backgroundColor: '#000',
                             zIndex: -1
                         }}></video>
                 </div>
