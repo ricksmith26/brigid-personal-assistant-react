@@ -1,18 +1,16 @@
 import axiosIns from "./axiosIns";
 
 export const AxiosProvider = ({ children }: any) => {
-    const hasBearerToken = window.location.search.includes('?token=')
-    const token = hasBearerToken
-        ? window.location.search.split('?token=')[1]
-        : localStorage.getItem('token')
-    if (hasBearerToken) {
-        localStorage.setItem('token', token || '')
-    }
     axiosIns.interceptors.request.clear()
     axiosIns.interceptors.response.clear()
+
+    // Request interceptor - add Bearer token
     axiosIns.interceptors.request.use(
         (config: any) => {
-            config.headers.Authorization = `Bearer ${token}`;
+            const currentToken = localStorage.getItem('token');
+            if (currentToken) {
+                config.headers.Authorization = `Bearer ${currentToken}`;
+            }
             config.headers.Accept = 'application/json';
             return config;
         },
@@ -20,6 +18,43 @@ export const AxiosProvider = ({ children }: any) => {
             return Promise.reject(error);
         }
     )
+
+    // Response interceptor - handle token expiration and refresh
+    axiosIns.interceptors.response.use(
+        (response) => response,
+        async (error) => {
+            const originalRequest = error.config;
+
+            // Check if error is 401 and token expired
+            if (error.response?.status === 401 &&
+                error.response?.data?.code === 'TOKEN_EXPIRED' &&
+                !originalRequest._retry) {
+
+                originalRequest._retry = true;
+
+                try {
+                    // Call refresh endpoint
+                    const refreshResponse = await axiosIns.post('/auth/refresh', {}, { withCredentials: true });
+
+                    // If refresh returns a new token, save it
+                    if (refreshResponse.data?.token) {
+                        localStorage.setItem('token', refreshResponse.data.token);
+                    }
+
+                    // Retry original request
+                    return axiosIns(originalRequest);
+                } catch (refreshError) {
+                    // Refresh failed - clear token and redirect to login
+                    localStorage.removeItem('token');
+                    window.location.href = '/auth/google';
+                    return Promise.reject(refreshError);
+                }
+            }
+
+            return Promise.reject(error);
+        }
+    )
+
     return <div>{children}</div>
 }
 
