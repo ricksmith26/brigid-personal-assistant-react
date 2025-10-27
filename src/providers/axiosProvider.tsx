@@ -4,7 +4,7 @@ export const AxiosProvider = ({ children }: any) => {
     axiosIns.interceptors.request.clear()
     axiosIns.interceptors.response.clear()
 
-    // Request interceptor - add Bearer token
+    // Request interceptor - add Bearer token from localStorage
     axiosIns.interceptors.request.use(
         (config: any) => {
             const currentToken = localStorage.getItem('token');
@@ -46,7 +46,7 @@ export const AxiosProvider = ({ children }: any) => {
                 } catch (refreshError) {
                     // Refresh failed - clear token and redirect to login
                     localStorage.removeItem('token');
-                    window.location.href = '/auth/google';
+                    window.location.href = `${process.env.API_URL}/auth/google`;
                     return Promise.reject(refreshError);
                 }
             }
