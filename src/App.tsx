@@ -62,13 +62,26 @@ function App() {
   useLocalTTS()
 
   const setUpSocket = useCallback(async(socket: any) => {
+    console.log('[App] Setting up socket event listeners');
+
+    socket.on(SocketEvent.Connect, () => {
+      console.log('[App] Socket connected');
+    });
+
+    socket.on(SocketEvent.Disconnect, () => {
+      console.log('[App] Socket disconnected');
+    });
+
     socket.on(SocketEvent.Message, async(message: any) => {
+      console.log('[App] Received message:', message);
       if (message.type === ModesEnum.WEBRTC) {
+        console.log('[App] WEBRTC message received');
         if (message.toEmail) {
+          console.log('[App] Outbound call to:', message.toEmail);
           dispatch(setRecipiant(message.toEmail))
           dispatch(setOutBoundCall(true));
-        } else {
-          
+        } else if (message.fromEmail) {
+          console.log('[App] Inbound call from:', message.fromEmail);
           await dispatch(setCaller(message.fromEmail))
           await dispatch(setInBoundCall(true));
         }
@@ -77,7 +90,7 @@ function App() {
     }),
       socket.on(SocketEvent.EmergencyCall, () => {
         getEmergencyCredentials().then((credentials: EmergencyCallCredentialsType) => {
-          console.log(credentials, "<<<<<credentialscredentialscredentials")
+          // console.log(credentials, "<<<<<credentialscredentialscredentials")
           setEmergencyCallCredentials(credentials)
           setTimeout(() => {
             dispatch(setMode('EMERGENCY'))
@@ -124,8 +137,12 @@ function App() {
 
   useEffect(() => {
     if (user) {
-      socket.emit('register', user.email)
-      console.log('getting patient data<<<<<')
+      // Register with device type for multi-device support
+      socket.emit('register', {
+        email: user.email,
+        deviceType: 'web'
+      })
+      console.log('Registered with backend as web device:', user.email)
       dispatch(getPatient())
       dispatch(getContacts())
       dispatch(getImages())
