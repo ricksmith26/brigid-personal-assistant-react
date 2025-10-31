@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import useSpeechToText, { ResultType } from "react-hook-speech-to-text";
+import useVoskSTT from "./useVoskSTT";
 import { ModesEnum } from "../types/Modes";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectMode, setMode } from "../redux/slices/ModeSlice";
@@ -25,14 +26,16 @@ const useLocalTTS = () => {
     const { socket } = useSocket();
     const [isSupported, setIsSupported] = useState(true);
     const [permissionError, setPermissionError] = useState<string | null>(null);
+    const [useVosk, setUseVosk] = useState(false);
     const hasStartedRef = useRef(false);
 
+    // Web Speech API hook
     const {
-        error,
-        isRecording,
-        results,
+        error: webSpeechError,
+        isRecording: webSpeechRecording,
+        results: webSpeechResults,
         startSpeechToText,
-        setResults,
+        setResults: setWebSpeechResults,
         stopSpeechToText
     } = useSpeechToText({
         continuous: true,
@@ -43,26 +46,47 @@ const useLocalTTS = () => {
         }
     });
 
+    // Vosk fallback hook - always call but only use when needed
+    const {
+        isReady: voskReady,
+        isRecording: voskRecording,
+        results: voskResults,
+        error: voskError,
+        startRecording: startVosk,
+        clearResults: clearVoskResults
+    } = useVoskSTT();
+
+    // Determine which STT to use
+    const results = useVosk ? voskResults : webSpeechResults;
+    const isRecording = useVosk ? voskRecording : webSpeechRecording;
+    const error = useVosk ? voskError : webSpeechError;
+
     // Check browser compatibility on mount
     useEffect(() => {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            console.error("Speech Recognition API is not supported in this browser");
+            console.warn("Web Speech API not supported, will use Vosk");
             setIsSupported(false);
+            setUseVosk(true);
             return;
         }
 
-        // Check for HTTPS or localhost
-        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-            console.warn("Speech Recognition requires HTTPS or localhost");
+        // Check for HTTPS or localhost/127.0.0.1
+        const isLocalhost = window.location.hostname === 'localhost' ||
+                           window.location.hostname === '127.0.0.1' ||
+                           window.location.hostname === '[::1]';
+        if (window.location.protocol !== 'https:' && !isLocalhost) {
+            console.warn("Web Speech API requires HTTPS, falling back to Vosk");
             setPermissionError("Speech Recognition requires HTTPS");
+            setUseVosk(true);
+            return;
         }
 
         // Request microphone permissions
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(() => {
-                    console.log("Microphone permission granted");
+                    console.log("Microphone permission granted - using Web Speech API");
                     setPermissionError(null);
                 })
                 .catch((err) => {
@@ -74,32 +98,40 @@ const useLocalTTS = () => {
 
     // Handle speech recognition start/restart
     useEffect(() => {
-        if (!isSupported || permissionError) {
-            console.log("Speech recognition not available:", { isSupported, permissionError });
-            return;
-        }
+        if (useVosk) {
+            // Use Vosk
+            if (!hasStartedRef.current && voskReady && !voskRecording) {
+                console.log("Starting Vosk speech recognition...");
+                startVosk();
+                hasStartedRef.current = true;
+            }
+        } else {
+            // Use Web Speech API
+            if (!isSupported || permissionError) {
+                console.log("Speech recognition not available:", { isSupported, permissionError });
+                return;
+            }
 
-        // Start speech recognition on mount
-        if (!hasStartedRef.current && !isRecording) {
-            console.log("Starting speech recognition...");
-            startSpeechToText();
-            hasStartedRef.current = true;
-        }
+            if (!hasStartedRef.current && !webSpeechRecording) {
+                console.log("Starting Web Speech API...");
+                startSpeechToText();
+                hasStartedRef.current = true;
+            }
 
-        // Handle errors and restart if needed
-        if (error) {
-            console.error("Speech Recognition Error:", error);
-            // Reset and try to restart after error
-            setTimeout(() => {
-                if (!isRecording) {
-                    console.log("Restarting speech recognition after error...");
-                    startSpeechToText();
-                }
-            }, 1000);
+            // Handle errors and restart if needed
+            if (webSpeechError) {
+                console.error("Web Speech Error:", webSpeechError);
+                setTimeout(() => {
+                    if (!webSpeechRecording) {
+                        console.log("Restarting Web Speech API after error...");
+                        startSpeechToText();
+                    }
+                }, 1000);
+            }
         }
-    }, [isSupported, permissionError, isRecording, error, startSpeechToText]);
+    }, [isSupported, permissionError, webSpeechRecording, webSpeechError, startSpeechToText, useVosk, voskReady, voskRecording, startVosk]);
 
-    // Process speech results
+    // Process speech results (works for both Web Speech and Vosk)
     useEffect(() => {
         console.log(results, '<><><><>><><><>')
         if (!results || results.length === 0) return;
@@ -136,14 +168,18 @@ const useLocalTTS = () => {
 
             // Clean up old results to prevent memory issues
             if (results.length > 50) {
-                setResults([])
+                if (useVosk) {
+                    clearVoskResults();
+                } else {
+                    setWebSpeechResults([]);
+                }
             }
 
         } catch (error) {
             console.log("Speech Recognition Processing Error:", error)
         }
 
-    }, [results, mode, recipiant, caller, user, dispatch, socket, isCallingInbound, setResults, stopSpeechToText]);
+    }, [results, mode, recipiant, caller, user, dispatch, socket, isCallingInbound, setWebSpeechResults, stopSpeechToText, useVosk, clearVoskResults]);
 
     return results
 }
