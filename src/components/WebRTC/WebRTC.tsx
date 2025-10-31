@@ -7,7 +7,7 @@ import { ModesEnum } from "../../types/Modes";
 import { SocketEvent } from "../../socket/socketMiddleware";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setMode } from "../../redux/slices/ModeSlice";
-import { selectAnswered, selectCaller, selectInBoundCall, selectOutBoundCall, selectRecipiant, setAnswered, setCaller, setInBoundCall, setOutBoundCall } from "../../redux/slices/CallsSlice";
+import { selectCaller, selectInBoundCall, selectOutBoundCall, selectRecipiant, setAnswered, setInBoundCall, setOutBoundCall, selectCurrentCallId, setCurrentCallId, setCallStartTime, resetCallState } from "../../redux/slices/CallsSlice";
 import { selectContacts } from "../../redux/slices/ContactsSlice";
 import useLocalTTS from "../../hooks/useLocalTTS";
 import { useSocket } from "../../providers/socketProvider";
@@ -20,7 +20,7 @@ export const WebRTC = () => {
     const recipiant = useAppSelector(selectRecipiant)
     const contacts = useAppSelector(selectContacts)
     const caller = useAppSelector(selectCaller)
-    const answered = useAppSelector(selectAnswered)
+    const currentCallId = useAppSelector(selectCurrentCallId)
     const [receivedOffer, setReceivedOffer] = useState<RTCSessionDescriptionInit | null>(null);
     const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
     const [areVisible, setAreVisible] = useState<boolean>(false)
@@ -35,17 +35,35 @@ export const WebRTC = () => {
 
     useEffect(() => {
 
-        socket.on(SocketEvent.Offer, async ({ offer }: any) => {
-            console.log("Incoming WebRTC Offer", offer);
+        socket.on(SocketEvent.Offer, async ({ offer, callId }: any) => {
+            console.log("Incoming WebRTC Offer", offer, "with callId:", callId);
             setReceivedOffer(offer);
+            if (callId) {
+                dispatch(setCurrentCallId(callId));
+                console.log("Stored callId:", callId);
+            }
         });
 
         socket.on(SocketEvent.Answer, async ({ answer }: any) => {
-            console.log("Received Answer");
+            console.log("Received Answer from remote peer");
             dispatch(setOutBoundCall(false))
             setAreVisible(true)
+
             if (peerConnection) {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                // Check peer connection state before setting remote description
+                if (peerConnection.signalingState === 'have-local-offer') {
+                    console.log("Setting remote description (answer)");
+                    try {
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                        console.log("Remote description set successfully");
+                    } catch (error) {
+                        console.error("Error setting remote description:", error);
+                    }
+                } else {
+                    console.warn("Cannot set remote description, peer connection in wrong state:", peerConnection.signalingState);
+                }
+            } else {
+                console.warn("No peer connection available to set remote description");
             }
         });
         socket.on(SocketEvent.HangUp, async ({ toEmail }: any) => {
@@ -55,9 +73,14 @@ export const WebRTC = () => {
             if (recipiant !== toEmail) hangupCall();
         });
 
-        socket.on(SocketEvent.IceCandidate, ({ candidate }: any) => {
-            if (peerConnection) {
-                peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        socket.on(SocketEvent.IceCandidate, async ({ candidate }: any) => {
+            if (peerConnection && candidate) {
+                try {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    console.log("Added ICE candidate");
+                } catch (error) {
+                    console.error("Error adding ICE candidate:", error);
+                }
             }
         });
 
@@ -84,26 +107,69 @@ export const WebRTC = () => {
     const acceptCall = async () => {
         if (!caller || !receivedOffer) return;
 
-        dispatch(setInBoundCall(false));
-        const pc = createPeerConnection(caller);
-        setPeerConnection(pc);
+        // Prevent multiple calls to acceptCall
+        if (peerConnection) {
+            console.log("Peer connection already exists, skipping acceptCall");
+            return;
+        }
 
-        // * Set Remote Description First**
-        await pc.setRemoteDescription(new RTCSessionDescription(receivedOffer));
+        try {
+            console.log("Accepting incoming call from:", caller);
+            dispatch(setInBoundCall(false));
 
-        // **Now, Create and Send an Answer**
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        setAreVisible(true)
-        socket.emit(SocketEvent.Answer, { to: caller, answer });
+            // Set call start time when accepting
+            dispatch(setCallStartTime(Date.now()));
+
+            // Ensure we have local media stream before creating peer connection
+            if (!localStreamRef.current) {
+                console.log("Getting user media before accepting call...");
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localStreamRef.current = stream;
+                if (localVideoRef.current) {
+                    localVideoRef.current.srcObject = stream;
+                }
+            }
+
+            const pc = createPeerConnection(caller);
+            setPeerConnection(pc);
+
+            // Set Remote Description First
+            await pc.setRemoteDescription(new RTCSessionDescription(receivedOffer));
+
+            // Now, Create and Send an Answer
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            setAreVisible(true)
+
+            // Emit acceptCall event with callId for backend tracking
+            if (currentCallId) {
+                socket.emit('acceptCall', {
+                    from: caller,
+                    callId: currentCallId,
+                });
+                console.log('Sent acceptCall event with callId:', currentCallId);
+            }
+
+            socket.emit(SocketEvent.Answer, { to: caller, answer });
+        } catch (error) {
+            console.error('Error accepting call:', error);
+            // Handle error appropriately
+        }
     };
 
     const rejectCall = () => {
-        console.log("Hanging up...");
+        console.log("Rejecting call...");
 
-        socket.emit(SocketEvent.HangUp, { toEmail: recipiant });
-        socket.emit(SocketEvent.HangUp, { toEmail: caller });
+        // Emit rejectCall event with callId for backend tracking
+        if (currentCallId && caller) {
+            socket.emit('rejectCall', {
+                from: caller,
+                callId: currentCallId,
+            });
+            console.log('Sent rejectCall event with callId:', currentCallId);
+        }
 
+        // Cleanup WebRTC resources
         if (peerConnection) {
             peerConnection.close();
             setPeerConnection(null);
@@ -116,39 +182,44 @@ export const WebRTC = () => {
         }
 
         // Reset state
-
-        dispatch(setInBoundCall(false));
-        dispatch(setOutBoundCall(false))
-        setCaller(null);
+        dispatch(resetCallState());
         setReceivedOffer(null);
         setAreVisible(false);
         setTimeout(() => {
             dispatch(setMode(ModesEnum.IDLE))
         }, 500)
-        console.log("Call ended.");
+        console.log("Call rejected.");
     };
 
 
     const hangupCall = () => {
         console.log("Hanging up...");
-        // Notify the other peer about the hangup
-        if (caller) {
-            socket.emit(SocketEvent.HangUp, { toEmail: caller });
+
+        // Emit hangup event with callId for backend tracking
+        const otherParty = caller || recipiant;
+        if (currentCallId && otherParty) {
+            socket.emit('hangup', {
+                toEmail: otherParty,
+                callId: currentCallId,
+                endReason: 'completed',
+            });
+            console.log('Sent hangup event with callId:', currentCallId);
         }
-        // Close the peer connection
+
+        // Cleanup WebRTC connection
         if (peerConnection) {
             peerConnection.close();
             setPeerConnection(null);
         }
+
         // Stop all local media tracks
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
             localStreamRef.current = null;
         }
+
         // Reset state
-        dispatch(setOutBoundCall(false))
-        dispatch(setInBoundCall(false));
-        setCaller(null);
+        dispatch(resetCallState());
         setReceivedOffer(null);
         setAreVisible(false);
         console.log("Call ended.");
@@ -158,17 +229,42 @@ export const WebRTC = () => {
         const pc = new RTCPeerConnection({
             iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
         });
-        localStreamRef.current?.getTracks().forEach((track) => pc.addTrack(track, localStreamRef.current!));
+
+        // Add local stream tracks to peer connection
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((track) => {
+                console.log('Adding track to peer connection:', track.kind);
+                pc.addTrack(track, localStreamRef.current!);
+            });
+        } else {
+            console.warn('No local stream available when creating peer connection');
+        }
+
+        // Handle incoming remote stream
         pc.ontrack = (event) => {
-            if (remoteVideoRef.current) {
+            console.log('Received remote track:', event.track.kind);
+            if (remoteVideoRef.current && event.streams && event.streams[0]) {
+                console.log('Setting remote stream to video element');
                 remoteVideoRef.current.srcObject = event.streams[0];
             }
         };
+
+        // Handle ICE candidates
         pc.onicecandidate = (event) => {
             if (event.candidate) {
                 socket.emit(SocketEvent.IceCandidate, { to: peerEmail, candidate: event.candidate });
             }
         };
+
+        // Log connection state changes for debugging
+        pc.onconnectionstatechange = () => {
+            console.log('Connection state:', pc.connectionState);
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            console.log('ICE connection state:', pc.iceConnectionState);
+        };
+
         setPeerConnection(pc);
         return pc;
     };
@@ -191,12 +287,6 @@ export const WebRTC = () => {
             if (outgoingCall) startCall()
         }, 1000)
     }, []);
-
-    useEffect(() => {
-        if (answered) {
-            acceptCall()
-        }
-    }, [answered])
 
     return (
         <div>

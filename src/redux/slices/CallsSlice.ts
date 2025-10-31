@@ -7,7 +7,9 @@ interface CallsState {
   answered: boolean,
   recipiant: string,
   caller: string,
-  receivedOffer: string
+  receivedOffer: string,
+  currentCallId: string | null,
+  callStartTime: number | null
 }
 
 const initialState: CallsState = {
@@ -16,7 +18,9 @@ const initialState: CallsState = {
     answered: false,
     recipiant: '',
     caller: '',
-    receivedOffer: ''
+    receivedOffer: '',
+    currentCallId: null,
+    callStartTime: null
 }
 
 export const callsSlice = createSlice({
@@ -41,12 +45,28 @@ export const callsSlice = createSlice({
     },
     setReceivedOffer: (state, action) =>{
       state.receivedOffer = action.payload
+    },
+    setCurrentCallId: (state, action) => {
+      state.currentCallId = action.payload
+    },
+    setCallStartTime: (state, action) => {
+      state.callStartTime = action.payload
+    },
+    resetCallState: (state) => {
+      state.isInboundCall = false
+      state.isOutboundCall = false
+      state.answered = false
+      state.recipiant = ''
+      state.caller = ''
+      state.receivedOffer = ''
+      state.currentCallId = null
+      state.callStartTime = null
     }
-    
+
   },
 })
 
-export const { setInBoundCall, setOutBoundCall, setAnswered, setRecipiant, setCaller } = callsSlice.actions
+export const { setInBoundCall, setOutBoundCall, setAnswered, setRecipiant, setCaller, setReceivedOffer, setCurrentCallId, setCallStartTime, resetCallState } = callsSlice.actions
 
 export const selectInBoundCall = (state: RootState) => state.callsSlice.isInboundCall
 export const selectOutBoundCall = (state: RootState) => state.callsSlice.isOutboundCall
@@ -54,5 +74,7 @@ export const selectAnswered = (state: RootState) => state.callsSlice.answered
 export const selectRecipiant = (state: RootState) => state.callsSlice.recipiant
 export const selectCaller = (state:RootState) => state.callsSlice.caller
 export const selectReceivedOffer = (state:RootState) => state.callsSlice.receivedOffer
+export const selectCurrentCallId = (state: RootState) => state.callsSlice.currentCallId
+export const selectCallStartTime = (state: RootState) => state.callsSlice.callStartTime
 
 export default callsSlice.reducer
