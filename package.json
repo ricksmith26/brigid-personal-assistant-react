@@ -39,7 +39,6 @@
     "react-responsive-carousel": "^3.2.23",
     "react-router": "^7.3.0",
     "react-router-dom": "^7.5.0",
-    "react-softphone": "^1.7.0",
     "react-use-audio-player": "^4.0.2",
     "sip.js": "^0.21.2",
     "socket.io-client": "^4.8.1",
