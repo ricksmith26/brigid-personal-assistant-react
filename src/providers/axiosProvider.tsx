@@ -4,13 +4,9 @@ export const AxiosProvider = ({ children }: any) => {
     axiosIns.interceptors.request.clear()
     axiosIns.interceptors.response.clear()
 
-    // Request interceptor - add Bearer token from localStorage
+    // Request interceptor - just set Accept header (auth via cookies)
     axiosIns.interceptors.request.use(
         (config: any) => {
-            const currentToken = localStorage.getItem('token');
-            if (currentToken) {
-                config.headers.Authorization = `Bearer ${currentToken}`;
-            }
             config.headers.Accept = 'application/json';
             return config;
         },
@@ -25,27 +21,22 @@ export const AxiosProvider = ({ children }: any) => {
         async (error) => {
             const originalRequest = error.config;
 
-            // Check if error is 401 and token expired
+            // Check if error is 401 (no token, expired token, or invalid token)
+            const errorCode = error.response?.data?.code;
             if (error.response?.status === 401 &&
-                error.response?.data?.code === 'TOKEN_EXPIRED' &&
+                (errorCode === 'TOKEN_EXPIRED' || errorCode === 'NO_TOKEN' || errorCode === 'INVALID_TOKEN') &&
                 !originalRequest._retry) {
 
                 originalRequest._retry = true;
 
                 try {
-                    // Call refresh endpoint
-                    const refreshResponse = await axiosIns.post('/auth/refresh', {}, { withCredentials: true });
-
-                    // If refresh returns a new token, save it
-                    if (refreshResponse.data?.token) {
-                        localStorage.setItem('token', refreshResponse.data.token);
-                    }
+                    // Call refresh endpoint - this will set new accessToken cookie
+                    await axiosIns.post('/auth/refresh', {}, { withCredentials: true });
 
                     // Retry original request
                     return axiosIns(originalRequest);
                 } catch (refreshError) {
-                    // Refresh failed - clear token and redirect to login
-                    localStorage.removeItem('token');
+                    // Refresh failed - redirect to login
                     window.location.href = `${process.env.API_URL}/auth/google`;
                     return Promise.reject(refreshError);
                 }
